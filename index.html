@@ -1,0 +1,1633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ZELVO | Online Shopping</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,sans-serif;background:#f4f5f7;color:#222}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+header{background:#111;color:#fff;position:sticky;top:0;z-index:1000}
+.header{max-width:1200px;margin:auto;padding:15px 20px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+.logo{font-size:29px;font-weight:800;letter-spacing:3px}
+nav{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+nav button{border:0;background:transparent;color:#fff;padding:9px 11px;border-radius:7px}
+nav button:hover{background:#333}
+.cartBtn{background:#159447!important}
+.offer{background:#159447;color:#fff;text-align:center;padding:11px;font-weight:bold}
+.page{display:none;min-height:70vh}
+.page.active{display:block}
+.hero{background:linear-gradient(135deg,#111,#292929);color:white;text-align:center;padding:75px 20px}
+.hero h1{font-size:48px;letter-spacing:3px;margin-bottom:12px}
+.hero p{color:#ddd;font-size:18px;margin-bottom:25px}
+.container{max-width:1200px;margin:auto;padding:35px 20px}
+.title{text-align:center;margin-bottom:25px;font-size:30px}
+.products{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.card{background:#fff;border-radius:15px;padding:20px;box-shadow:0 4px 18px #00000012}
+.product-img{height:245px;background:#eee;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:15px}
+.product-img img{width:100%;height:100%;object-fit:cover}
+.placeholder{text-align:center;color:#777}
+.pname{font-size:20px;font-weight:bold;margin-bottom:9px}
+.old{text-decoration:line-through;color:#888;margin-right:8px}
+.price{font-size:23px;color:#159447;font-weight:bold}
+.btn{border:0;border-radius:8px;padding:12px 18px;font-weight:bold}
+.green{background:#159447;color:#fff}
+.dark{background:#111;color:#fff}
+.red{background:#dc2626;color:#fff}
+.gray{background:#e5e7eb;color:#111}
+.full{width:100%}
+.form{max-width:650px;margin:20px auto;background:#fff;padding:25px;border-radius:15px;box-shadow:0 4px 18px #00000012}
+.group{margin-bottom:16px}
+.group label{display:block;font-weight:bold;margin-bottom:7px}
+.group input,.group select,.group textarea{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px}
+.group textarea{min-height:100px;resize:vertical}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.message{padding:13px;border-radius:8px;background:#eef6f0;margin-bottom:15px}
+.cart-item{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:17px 0;border-bottom:1px solid #ddd}
+.qty{display:flex;align-items:center;gap:9px}
+.qty button{width:32px;height:32px;border:0;border-radius:6px;background:#111;color:#fff}
+.summary{margin-top:20px;background:#fafafa;padding:20px;border-radius:10px}
+.line{display:flex;justify-content:space-between;margin:10px 0}
+.grand{border-top:1px solid #ddd;padding-top:12px;font-size:22px;font-weight:bold}
+.order{margin-bottom:18px}
+.order-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.status{display:inline-block;padding:6px 10px;background:#e5e7eb;border-radius:20px;font-size:13px;font-weight:bold}
+.items{background:#f6f6f6;border-radius:9px;padding:12px;margin:14px 0;line-height:1.8}
+footer{background:#111;color:#fff;padding:40px 20px;margin-top:40px}
+.footer{max-width:1200px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:25px}
+footer h3{margin-bottom:12px}
+footer button{display:block;background:none;border:0;color:#ccc;margin:7px 0}
+.modal{display:none;position:fixed;inset:0;background:#0009;z-index:3000;align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.modal-box{background:#fff;width:100%;max-width:500px;border-radius:15px;padding:25px}
+.close{float:right;border:0;background:none;font-size:25px}
+.admin-order{border-left:5px solid #159447;margin-bottom:18px}
+.empty{text-align:center;padding:35px;color:#666}
+.hidden{display:none!important}
+@media(max-width:800px){
+.products{grid-template-columns:1fr}
+.footer{grid-template-columns:1fr 1fr}
+.header{flex-direction:column}
+.hero h1{font-size:37px}
+}
+@media(max-width:500px){
+.row{grid-template-columns:1fr}
+.footer{grid-template-columns:1fr}
+.cart-item{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="header">
+<div class="logo">ZELVO</div>
+
+<nav>
+<button onclick="page('home')">Home</button>
+<button onclick="page('products')">Shop</button>
+<button onclick="page('about')">About</button>
+<button onclick="page('orders')">My Orders</button>
+<button onclick="page('track')">Track</button>
+<button onclick="page('account')">Account</button>
+<button class="cartBtn" onclick="page('cart')">
+Cart (<span id="cartCount">0</span>)
+</button>
+<button id="adminNav" class="hidden" onclick="page('admin')">Admin</button>
+</nav>
+</div>
+</header>
+
+<div class="offer">
+WELCOME TO ZELVO — ONLINE SHOPPING
+</div>
+
+<!-- HOME -->
+<section id="home" class="page active">
+<div class="hero">
+<h1>ZELVO</h1>
+<p>Simple. Modern. Convenient Online Shopping.</p>
+<button class="btn green" onclick="page('products')">SHOP NOW</button>
+</div>
+
+<div class="container">
+<h2 class="title">Featured Products</h2>
+<div id="homeProducts" class="products"></div>
+</div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products" class="page">
+<div class="container">
+<h2 class="title">Creams & Serums</h2>
+<div id="productList" class="products"></div>
+</div>
+</section>
+
+<!-- CART -->
+<section id="cart" class="page">
+<div class="container">
+<h2 class="title">Shopping Cart</h2>
+
+<div class="card">
+<div id="cartItems"></div>
+
+<div class="summary">
+<div class="line">
+<span>Products Subtotal</span>
+<strong>Rs <span id="subtotal">0</span></strong>
+</div>
+
+<div class="line">
+<span>Delivery</span>
+<strong>Rs <span id="delivery">0</span></strong>
+</div>
+
+<div class="line grand">
+<span>Grand Total</span>
+<strong>Rs <span id="grandTotal">0</span></strong>
+</div>
+
+<button class="btn green full" style="margin-top:15px"
+onclick="checkout()">
+Proceed to Checkout
+</button>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ACCOUNT -->
+<section id="account" class="page">
+<div class="container">
+
+<div id="loginBox" class="form">
+<h2 style="margin-bottom:20px">Customer Account</h2>
+
+<div id="authMessage"></div>
+
+<div class="group">
+<label>Email</label>
+<input id="email" type="email" placeholder="Your email">
+</div>
+
+<div class="group">
+<label>Password</label>
+<input id="password" type="password" placeholder="Password">
+</div>
+
+<button class="btn green full" onclick="login()">Login</button>
+
+<button class="btn gray full" style="margin-top:10px"
+onclick="register()">
+Create New Account
+</button>
+
+<hr style="margin:22px 0">
+
+<button class="btn dark full" onclick="adminLogin()">
+Admin Login
+</button>
+</div>
+
+<div id="accountBox" class="form hidden">
+<h2>My Account</h2>
+
+<p style="margin:15px 0">
+Logged in as:
+<strong id="accountEmail"></strong>
+</p>
+
+<button class="btn red" onclick="logout()">Logout</button>
+</div>
+
+</div>
+</section>
+
+<!-- CHECKOUT -->
+<section id="checkoutPage" class="page">
+<div class="container">
+<h2 class="title">Checkout</h2>
+
+<div class="form">
+
+<div id="checkoutMessage"></div>
+
+<div class="row">
+
+<div class="group">
+<label>Full Name *</label>
+<input id="name">
+</div>
+
+<div class="group">
+<label>Mobile Number *</label>
+<input id="mobile">
+</div>
+
+</div>
+
+<div class="group">
+<label>Email</label>
+<input id="checkoutEmail" readonly>
+</div>
+
+<div class="group">
+<label>Complete Address *</label>
+<textarea id="address"></textarea>
+</div>
+
+<div class="row">
+
+<div class="group">
+<label>City *</label>
+<input id="city">
+</div>
+
+<div class="group">
+<label>Province *</label>
+<select id="province">
+<option value="">Select Province</option>
+<option>Punjab</option>
+<option>Sindh</option>
+<option>Khyber Pakhtunkhwa</option>
+<option>Balochistan</option>
+<option>Islamabad Capital Territory</option>
+<option>Gilgit-Baltistan</option>
+<option>Azad Jammu & Kashmir</option>
+</select>
+</div>
+
+</div>
+
+<div class="group">
+<label>Payment Method</label>
+<select id="payment">
+<option>Cash on Delivery</option>
+<option>JazzCash</option>
+<option>EasyPaisa</option>
+</select>
+</div>
+
+<div class="summary">
+<div class="line">
+<span>Subtotal</span>
+<strong>Rs <span id="checkoutSubtotal">0</span></strong>
+</div>
+
+<div class="line">
+<span>Delivery</span>
+<strong>Rs 0</strong>
+</div>
+
+<div class="line grand">
+<span>Total</span>
+<strong>Rs <span id="checkoutTotal">0</span></strong>
+</div>
+</div>
+
+<button class="btn green full" style="margin-top:18px"
+onclick="placeOrder()">
+PLACE ORDER
+</button>
+
+</div>
+</div>
+</section>
+
+<!-- ORDERS -->
+<section id="orders" class="page">
+<div class="container">
+<h2 class="title">My Orders</h2>
+<div id="ordersList"></div>
+</div>
+</section>
+
+<!-- TRACK -->
+<section id="track" class="page">
+<div class="container">
+
+<h2 class="title">Track Order</h2>
+
+<div class="form">
+
+<div class="group">
+<label>Order ID</label>
+<input id="trackId" placeholder="Example: ZELVO-ABC123">
+</div>
+
+<button class="btn dark full" onclick="track()">Track Order</button>
+
+<div id="trackResult" style="margin-top:20px"></div>
+
+</div>
+</div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="page">
+<div class="container">
+<div class="card">
+<h2>About ZELVO</h2>
+<p style="line-height:1.8;margin-top:15px">
+ZELVO is an online shopping platform designed to provide
+customers with a simple and convenient shopping experience.
+Browse products, add them to your cart and place your order
+directly through the website.
+</p>
+</div>
+</div>
+</section>
+
+<!-- PRIVACY -->
+<section id="privacy" class="page">
+<div class="container">
+<div class="card">
+<h2>Privacy Policy</h2>
+<p style="line-height:1.8;margin-top:15px">
+ZELVO stores information entered by customers in this
+browser for the purpose of this website's local order system.
+Customers should avoid entering sensitive information that
+is not required for an order.
+</p>
+</div>
+</div>
+</section>
+
+<!-- TERMS -->
+<section id="terms" class="page">
+<div class="container">
+<div class="card">
+<h2>Terms & Conditions</h2>
+<p style="line-height:1.8;margin-top:15px">
+Customers are responsible for providing accurate contact and
+delivery information. Product prices and availability may be
+updated by ZELVO. Orders can be cancelled according to their
+current status.
+</p>
+</div>
+</div>
+</section>
+
+<!-- SHIPPING -->
+<section id="shipping" class="page">
+<div class="container">
+<div class="card">
+<h2>Shipping & Delivery</h2>
+<p style="line-height:1.8;margin-top:15px">
+Orders are processed after being placed. Delivery time can
+vary according to the destination and delivery service.
+Customers should provide a correct address and active mobile
+number.
+</p>
+</div>
+</div>
+</section>
+
+<!-- RETURNS -->
+<section id="returns" class="page">
+<div class="container">
+<div class="card">
+<h2>Returns & Refunds</h2>
+<p style="line-height:1.8;margin-top:15px">
+For eligible damaged or incorrect orders, customers should
+contact ZELVO with their Order ID. Returns and refunds are
+subject to the store's applicable return policy.
+</p>
+</div>
+</div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="page">
+<div class="container">
+<div class="form">
+<h2>Contact ZELVO</h2>
+<p style="line-height:1.8;margin-top:15px">
+For order-related questions, please keep your Order ID
+available when contacting ZELVO.
+</p>
+</div>
+</div>
+</section>
+
+<!-- ADMIN -->
+<section id="admin" class="page">
+<div class="container">
+
+<h2 class="title">ZELVO Admin Dashboard</h2>
+
+<div id="adminInfo" class="message"></div>
+
+<div id="adminOrders"></div>
+
+</div>
+</section>
+
+<!-- CANCEL MODAL -->
+<div id="cancelModal" class="modal">
+<div class="modal-box">
+
+<button class="close" onclick="closeCancel()">×</button>
+
+<h2>Cancel Order</h2>
+
+<p style="margin:15px 0">
+Please enter a reason for cancellation.
+</p>
+
+<textarea id="cancelReason"
+style="width:100%;min-height:120px;padding:12px;border:1px solid #ccc;border-radius:8px"
+placeholder="Cancellation reason"></textarea>
+
+<button class="btn red full" style="margin-top:15px"
+onclick="confirmCancel()">
+Confirm Cancellation
+</button>
+
+</div>
+</div>
+
+<footer>
+<div class="footer">
+
+<div>
+<h3>ZELVO</h3>
+<p>Online Shopping</p>
+</div>
+
+<div>
+<h3>Shop</h3>
+<button onclick="page('products')">Products</button>
+<button onclick="page('cart')">Cart</button>
+<button onclick="page('orders')">My Orders</button>
+</div>
+
+<div>
+<h3>Information</h3>
+<button onclick="page('about')">About</button>
+<button onclick="page('privacy')">Privacy Policy</button>
+<button onclick="page('terms')">Terms & Conditions</button>
+</div>
+
+<div>
+<h3>Help</h3>
+<button onclick="page('shipping')">Shipping</button>
+<button onclick="page('returns')">Returns & Refunds</button>
+<button onclick="page('contact')">Contact</button>
+</div>
+
+</div>
+</footer>
+
+<script>
+
+/* =====================================================
+   ZELVO PRODUCTS
+===================================================== */
+
+const products=[
+{
+id:"gluta",
+name:"Gluta White Cream",
+old:1200,
+price:550,
+image:"https://raw.githubusercontent.com/zaidxyz78686-png/ZELVO/refs/heads/main/WhatsApp%20Image%202026-08-16%20at%2016.36.21.jpeg"
+},
+{
+id:"multi",
+name:"Multi Vitamin Serum",
+old:1500,
+price:699,
+image:"https://raw.githubusercontent.com/zaidxyz78686-png/ZELVO/refs/heads/main/WhatsApp%20Image%202026-09-22%20at%205.23.16%20PM.jpeg"
+},
+{
+id:"anti",
+name:"Fairness & Anti-Aging Serum",
+old:1500,
+price:699,
+image:"https://raw.githubusercontent.com/zaidxyz78686-png/ZELVO/refs/heads/main/WhatsApp%20Image%202026-09-22%20at%205.06.17%20PM.jpeg"
+}
+];
+
+
+/* =====================================================
+   ADMIN
+===================================================== */
+
+const ADMIN_NAME="Muhammad Umar";
+const ADMIN_PASSWORD="M.Umar.xyz.786";
+
+
+/* =====================================================
+   LOCAL DATA
+===================================================== */
+
+let cart=JSON.parse(localStorage.getItem("zelvo_cart")||"{}");
+
+let users=JSON.parse(localStorage.getItem("zelvo_users")||"[]");
+
+let orders=JSON.parse(localStorage.getItem("zelvo_orders")||"[]");
+
+let currentUser=localStorage.getItem("zelvo_currentUser")||null;
+
+let adminLogged=
+localStorage.getItem("zelvo_admin") === "true";
+
+let cancelTarget=null;
+
+
+/* =====================================================
+   SAVE
+===================================================== */
+
+function save(){
+
+localStorage.setItem("zelvo_cart",JSON.stringify(cart));
+
+localStorage.setItem("zelvo_users",JSON.stringify(users));
+
+localStorage.setItem("zelvo_orders",JSON.stringify(orders));
+
+updateCartCount();
+
+}
+
+
+/* =====================================================
+   PAGE
+===================================================== */
+
+function page(id){
+
+document.querySelectorAll(".page")
+.forEach(x=>x.classList.remove("active"));
+
+document.getElementById(id).classList.add("active");
+
+window.scrollTo({top:0,behavior:"smooth"});
+
+if(id==="cart") renderCart();
+
+if(id==="orders") renderOrders();
+
+if(id==="account") updateAccount();
+
+if(id==="admin") renderAdmin();
+
+}
+
+
+/* =====================================================
+   PRODUCTS
+===================================================== */
+
+function productHTML(p){
+
+return `
+<div class="card">
+
+<div class="product-img">
+
+${
+p.image
+?
+`<img src="${p.image}" alt="${p.name}">`
+:
+`<div class="placeholder">
+<strong>ZELVO</strong><br>
+Product Image
+</div>`
+}
+
+</div>
+
+<div class="pname">${p.name}</div>
+
+<div>
+<span class="old">Rs ${p.old}</span>
+<span class="price">Rs ${p.price}</span>
+</div>
+
+<button class="btn green full"
+style="margin-top:15px"
+onclick="add('${p.id}')">
+Add to Cart
+</button>
+
+</div>
+`;
+
+}
+
+function renderProducts(){
+
+document.getElementById("productList").innerHTML=
+products.map(productHTML).join("");
+
+document.getElementById("homeProducts").innerHTML=
+products.map(productHTML).join("");
+
+}
+
+
+/* =====================================================
+   CART
+===================================================== */
+
+function add(id){
+
+cart[id]=(cart[id]||0)+1;
+
+save();
+
+renderCart();
+
+page("cart");
+
+}
+
+
+function changeQty(id,value){
+
+cart[id]=(cart[id]||0)+value;
+
+if(cart[id]<=0) delete cart[id];
+
+save();
+
+renderCart();
+
+}
+
+
+function updateCartCount(){
+
+let count=0;
+
+Object.values(cart).forEach(x=>count+=x);
+
+document.getElementById("cartCount").textContent=count;
+
+}
+
+
+function cartTotal(){
+
+let total=0;
+
+Object.keys(cart).forEach(id=>{
+
+let p=products.find(x=>x.id===id);
+
+if(p) total+=p.price*cart[id];
+
+});
+
+return total;
+
+}
+
+
+function renderCart(){
+
+let box=document.getElementById("cartItems");
+
+let ids=Object.keys(cart);
+
+if(ids.length===0){
+
+box.innerHTML=`
+<div class="empty">
+Your cart is empty.
+<br><br>
+<button class="btn green" onclick="page('products')">
+Start Shopping
+</button>
+</div>`;
+
+}else{
+
+box.innerHTML=ids.map(id=>{
+
+let p=products.find(x=>x.id===id);
+
+let qty=cart[id];
+
+return `
+<div class="cart-item">
+
+<div>
+<strong>${p.name}</strong>
+<br>
+Rs ${p.price}
+</div>
+
+<div class="qty">
+<button onclick="changeQty('${id}',-1)">−</button>
+<strong>${qty}</strong>
+<button onclick="changeQty('${id}',1)">+</button>
+</div>
+
+<strong>Rs ${p.price*qty}</strong>
+
+</div>
+`;
+
+}).join("");
+
+}
+
+let total=cartTotal();
+
+document.getElementById("subtotal").textContent=total;
+
+document.getElementById("delivery").textContent=0;
+
+document.getElementById("grandTotal").textContent=total;
+
+}
+
+
+/* =====================================================
+   CHECKOUT
+===================================================== */
+
+function checkout(){
+
+if(Object.keys(cart).length===0){
+
+alert("Your cart is empty.");
+
+return;
+
+}
+
+if(!currentUser){
+
+alert("Please create an account or login first.");
+
+page("account");
+
+return;
+
+}
+
+document.getElementById("checkoutEmail").value=currentUser;
+
+document.getElementById("checkoutSubtotal").textContent=cartTotal();
+
+document.getElementById("checkoutTotal").textContent=cartTotal();
+
+page("checkoutPage");
+
+}
+
+
+/* =====================================================
+   REGISTER
+===================================================== */
+
+function register(){
+
+let email=document.getElementById("email").value.trim().toLowerCase();
+
+let password=document.getElementById("password").value;
+
+if(!email||!password){
+
+alert("Enter email and password.");
+
+return;
+
+}
+
+if(password.length<6){
+
+alert("Password must contain at least 6 characters.");
+
+return;
+
+}
+
+if(users.some(u=>u.email===email)){
+
+alert("This account already exists. Please login.");
+
+return;
+
+}
+
+users.push({
+email:email,
+password:password
+});
+
+save();
+
+currentUser=email;
+
+localStorage.setItem("zelvo_currentUser",email);
+
+alert("Account created successfully.");
+
+updateAccount();
+
+page("home");
+
+}
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+function login(){
+
+let email=document.getElementById("email").value.trim().toLowerCase();
+
+let password=document.getElementById("password").value;
+
+let user=users.find(
+u=>u.email===email && u.password===password
+);
+
+if(!user){
+
+alert("Incorrect email or password.");
+
+return;
+
+}
+
+currentUser=email;
+
+adminLogged=false;
+
+localStorage.setItem("zelvo_currentUser",email);
+
+localStorage.removeItem("zelvo_admin");
+
+updateAccount();
+
+alert("Login successful.");
+
+page("home");
+
+}
+
+
+/* =====================================================
+   ADMIN LOGIN
+===================================================== */
+
+function adminLogin(){
+
+let name=prompt("Admin Name:");
+
+if(name===null)return;
+
+let password=prompt("Admin Password:");
+
+if(password===null)return;
+
+if(
+name.trim()===ADMIN_NAME &&
+password===ADMIN_PASSWORD
+){
+
+adminLogged=true;
+
+currentUser=null;
+
+localStorage.setItem("zelvo_admin","true");
+
+localStorage.removeItem("zelvo_currentUser");
+
+document.getElementById("adminNav")
+.classList.remove("hidden");
+
+alert("Admin login successful.");
+
+page("admin");
+
+}else{
+
+alert("Incorrect admin name or password.");
+
+}
+
+}
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+function logout(){
+
+currentUser=null;
+
+adminLogged=false;
+
+localStorage.removeItem("zelvo_currentUser");
+
+localStorage.removeItem("zelvo_admin");
+
+document.getElementById("adminNav")
+.classList.add("hidden");
+
+updateAccount();
+
+page("home");
+
+}
+
+
+/* =====================================================
+   ACCOUNT UI
+===================================================== */
+
+function updateAccount(){
+
+if(currentUser){
+
+document.getElementById("loginBox")
+.classList.add("hidden");
+
+document.getElementById("accountBox")
+.classList.remove("hidden");
+
+document.getElementById("accountEmail")
+.textContent=currentUser;
+
+}else{
+
+document.getElementById("loginBox")
+.classList.remove("hidden");
+
+document.getElementById("accountBox")
+.classList.add("hidden");
+
+}
+
+}
+
+
+/* =====================================================
+   PLACE ORDER
+===================================================== */
+
+function placeOrder(){
+
+if(!currentUser){
+
+alert("Please login.");
+
+page("account");
+
+return;
+
+}
+
+if(Object.keys(cart).length===0){
+
+alert("Your cart is empty.");
+
+return;
+
+}
+
+let name=document.getElementById("name").value.trim();
+
+let mobile=document.getElementById("mobile").value.trim();
+
+let address=document.getElementById("address").value.trim();
+
+let city=document.getElementById("city").value.trim();
+
+let province=document.getElementById("province").value;
+
+let payment=document.getElementById("payment").value;
+
+
+if(!name||!mobile||!address||!city||!province){
+
+alert("Please fill all required fields.");
+
+return;
+
+}
+
+
+let items=Object.keys(cart).map(id=>{
+
+let p=products.find(x=>x.id===id);
+
+return {
+id:p.id,
+name:p.name,
+price:p.price,
+qty:cart[id]
+};
+
+});
+
+
+let total=cartTotal();
+
+let orderId=
+"ZELVO-"+
+Date.now().toString(36).toUpperCase()+
+"-"+
+Math.random().toString(36).substring(2,7).toUpperCase();
+
+
+let order={
+
+id:orderId,
+
+customerEmail:currentUser,
+
+customer:{
+name:name,
+mobile:mobile,
+address:address,
+city:city,
+province:province
+},
+
+items:items,
+
+subtotal:total,
+
+delivery:0,
+
+total:total,
+
+payment:payment,
+
+status:"Pending",
+
+cancellationReason:"",
+
+cancelledBy:"",
+
+date:new Date().toLocaleString()
+
+};
+
+
+orders.push(order);
+
+cart={};
+
+save();
+
+
+document.getElementById("checkoutMessage").innerHTML=`
+<div class="message">
+<strong>Order Placed Successfully!</strong>
+<br><br>
+Order ID:
+<strong>${orderId}</strong>
+<br><br>
+Save this Order ID to track your order.
+</div>
+`;
+
+alert("Order placed successfully!");
+
+page("orders");
+
+renderOrders();
+
+}
+
+
+/* =====================================================
+   CUSTOMER ORDERS
+===================================================== */
+
+function renderOrders(){
+
+let box=document.getElementById("ordersList");
+
+if(!currentUser){
+
+box.innerHTML=`
+<div class="form">
+Please login to view your orders.
+<br><br>
+<button class="btn green" onclick="page('account')">
+Login
+</button>
+</div>`;
+
+return;
+
+}
+
+let mine=orders.filter(
+o=>o.customerEmail===currentUser
+);
+
+if(mine.length===0){
+
+box.innerHTML=`
+<div class="card empty">
+You have not placed any orders yet.
+</div>`;
+
+return;
+
+}
+
+mine.sort((a,b)=>b.id.localeCompare(a.id));
+
+box.innerHTML=mine.map(orderHTML).join("");
+
+}
+
+
+function orderHTML(o){
+
+let items=o.items.map(i=>
+`<div>${escapeHTML(i.name)} × ${i.qty} — Rs ${i.price*i.qty}</div>`
+).join("");
+
+let canCancel=
+o.status==="Pending" ||
+o.status==="Confirmed";
+
+
+return `
+<div class="card order">
+
+<div class="order-head">
+
+<h3>${o.id}</h3>
+
+<span class="status">${o.status}</span>
+
+</div>
+
+<p style="margin-top:12px">
+<strong>Date:</strong> ${escapeHTML(o.date)}
+</p>
+
+<div class="items">
+<strong>Products</strong>
+${items}
+</div>
+
+<p>
+<strong>Total:</strong> Rs ${o.total}
+</p>
+
+<p style="margin-top:8px">
+<strong>Payment:</strong> ${escapeHTML(o.payment)}
+</p>
+
+${
+o.cancellationReason
+?
+`<p style="margin-top:10px">
+<strong>Cancellation Reason:</strong>
+${escapeHTML(o.cancellationReason)}
+</p>`
+:""
+}
+
+${
+canCancel
+?
+`<button class="btn red"
+style="margin-top:15px"
+onclick="openCancel('${o.id}')">
+Cancel Order
+</button>`
+:""
+}
+
+</div>
+`;
+
+}
+
+
+/* =====================================================
+   TRACK
+===================================================== */
+
+function track(){
+
+let id=document.getElementById("trackId")
+.value.trim()
+.toUpperCase();
+
+let box=document.getElementById("trackResult");
+
+if(!currentUser){
+
+box.innerHTML=`
+<div class="message">
+Please login to track your order.
+</div>`;
+
+return;
+
+}
+
+let o=orders.find(
+x=>x.id===id && x.customerEmail===currentUser
+);
+
+if(!o){
+
+box.innerHTML=`
+<div class="message">
+Order not found.
+</div>`;
+
+return;
+
+}
+
+box.innerHTML=`
+<div class="card">
+
+<h3>${o.id}</h3>
+
+<p style="margin:15px 0">
+Order Status:
+<span class="status">${o.status}</span>
+</p>
+
+<p>
+<strong>Total:</strong> Rs ${o.total}
+</p>
+
+<p style="margin-top:8px">
+<strong>Payment:</strong> ${escapeHTML(o.payment)}
+</p>
+
+</div>
+`;
+
+}
+
+
+/* =====================================================
+   CUSTOMER CANCEL
+===================================================== */
+
+function openCancel(id){
+
+cancelTarget=id;
+
+document.getElementById("cancelReason").value="";
+
+document.getElementById("cancelModal")
+.classList.add("show");
+
+}
+
+
+function closeCancel(){
+
+cancelTarget=null;
+
+document.getElementById("cancelModal")
+.classList.remove("show");
+
+}
+
+
+function confirmCancel(){
+
+if(!cancelTarget)return;
+
+let reason=document.getElementById("cancelReason")
+.value.trim();
+
+if(!reason){
+
+alert("Please enter a cancellation reason.");
+
+return;
+
+}
+
+let o=orders.find(x=>x.id===cancelTarget);
+
+if(!o){
+
+closeCancel();
+
+return;
+
+}
+
+if(
+o.customerEmail!==currentUser ||
+(o.status!=="Pending" && o.status!=="Confirmed")
+){
+
+alert("This order cannot be cancelled.");
+
+closeCancel();
+
+return;
+
+}
+
+o.status="Cancelled";
+
+o.cancellationReason=reason;
+
+o.cancelledBy="Customer";
+
+save();
+
+closeCancel();
+
+alert("Order cancelled successfully.");
+
+renderOrders();
+
+}
+
+
+/* =====================================================
+   ADMIN DASHBOARD
+===================================================== */
+
+function renderAdmin(){
+
+if(!adminLogged){
+
+document.getElementById("adminInfo").textContent=
+"Admin login required.";
+
+document.getElementById("adminOrders").innerHTML="";
+
+return;
+
+}
+
+document.getElementById("adminInfo").innerHTML=
+`Logged in as <strong>${ADMIN_NAME}</strong>`;
+
+if(orders.length===0){
+
+document.getElementById("adminOrders").innerHTML=
+`<div class="card empty">No orders yet.</div>`;
+
+return;
+
+}
+
+
+document.getElementById("adminOrders").innerHTML=
+orders.slice().reverse().map(adminOrderHTML).join("");
+
+}
+
+
+function adminOrderHTML(o){
+
+let items=o.items.map(i=>
+`<li>${escapeHTML(i.name)} × ${i.qty} — Rs ${i.price*i.qty}</li>`
+).join("");
+
+
+return `
+<div class="card admin-order">
+
+<div class="order-head">
+<h3>${o.id}</h3>
+<span class="status">${o.status}</span>
+</div>
+
+<hr style="margin:15px 0">
+
+<p>
+<strong>Customer:</strong>
+${escapeHTML(o.customer.name)}
+</p>
+
+<p>
+<strong>Mobile:</strong>
+${escapeHTML(o.customer.mobile)}
+</p>
+
+<p>
+<strong>Email:</strong>
+${escapeHTML(o.customerEmail)}
+</p>
+
+<p>
+<strong>Address:</strong>
+${escapeHTML(o.customer.address)},
+${escapeHTML(o.customer.city)},
+${escapeHTML(o.customer.province)}
+</p>
+
+<div class="items">
+
+<strong>Products:</strong>
+
+<ul style="margin:8px 0 0 20px">
+${items}
+</ul>
+
+</div>
+
+<p>
+<strong>Total:</strong> Rs ${o.total}
+</p>
+
+<p style="margin-top:7px">
+<strong>Payment:</strong> ${escapeHTML(o.payment)}
+</p>
+
+<div class="group" style="margin-top:18px">
+
+<label>Change Order Status</label>
+
+<select onchange="changeStatus('${o.id}',this.value)">
+
+${[
+"Pending",
+"Confirmed",
+"Packed",
+"Shipped",
+"Delivered",
+"Cancelled"
+].map(s=>
+`<option ${o.status===s?"selected":""}>${s}</option>`
+).join("")}
+
+</select>
+
+</div>
+
+${
+o.status!=="Delivered" && o.status!=="Cancelled"
+?
+`
+<div class="group">
+
+<label>Cancellation Reason</label>
+
+<textarea
+id="adminReason-${o.id}"
+placeholder="Required when cancelling">
+</textarea>
+
+</div>
+
+<button class="btn red"
+onclick="adminCancel('${o.id}')">
+Cancel Order
+</button>
+`
+:""
+}
+
+${
+o.cancellationReason
+?
+`<p style="margin-top:12px">
+<strong>Cancellation Reason:</strong>
+${escapeHTML(o.cancellationReason)}
+<br>
+<strong>Cancelled By:</strong>
+${escapeHTML(o.cancelledBy)}
+</p>`
+:""
+}
+
+</div>
+`;
+
+}
+
+
+/* =====================================================
+   ADMIN STATUS
+===================================================== */
+
+function changeStatus(id,status){
+
+if(!adminLogged){
+
+alert("Admin login required.");
+
+return;
+
+}
+
+let o=orders.find(x=>x.id===id);
+
+if(!o)return;
+
+o.status=status;
+
+save();
+
+renderAdmin();
+
+}
+
+
+/* =====================================================
+   ADMIN CANCEL
+===================================================== */
+
+function adminCancel(id){
+
+if(!adminLogged){
+
+alert("Admin login required.");
+
+return;
+
+}
+
+let reason=document.getElementById(
+"adminReason-"+id
+).value.trim();
+
+if(!reason){
+
+alert("Enter cancellation reason.");
+
+return;
+
+}
+
+let o=orders.find(x=>x.id===id);
+
+if(!o)return;
+
+o.status="Cancelled";
+
+o.cancellationReason=reason;
+
+o.cancelledBy=ADMIN_NAME;
+
+save();
+
+alert("Order cancelled successfully.");
+
+renderAdmin();
+
+}
+
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHTML(value){
+
+return String(value||"")
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
+
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+renderProducts();
+
+renderCart();
+
+updateCartCount();
+
+if(adminLogged){
+
+document.getElementById("adminNav")
+.classList.remove("hidden");
+
+}
+
+updateAccount();
+
+</script>
+
+</body>
+</html>
+
