@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,7 +10,8 @@
 
 <title>ZELVO - Online Shopping</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- SUPABASE -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <style>
 
@@ -885,8 +887,6 @@ WELCOME TO ZELVO — ONLINE SHOPPING
 </header>
 
 
-<!-- HOME -->
-
 <section id="home" class="page active">
 
 <div class="container">
@@ -933,8 +933,6 @@ id="homeProducts">
 </section>
 
 
-<!-- SHOP -->
-
 <section id="shop" class="page">
 
 <div class="container">
@@ -959,8 +957,6 @@ id="shopProducts">
 
 </section>
 
-
-<!-- ABOUT -->
 
 <section id="about" class="page">
 
@@ -997,8 +993,6 @@ Our goal is to make online shopping simple, clear and convenient.
 </section>
 
 
-<!-- CART -->
-
 <section id="cart" class="page">
 
 <div class="container">
@@ -1024,8 +1018,6 @@ id="cartContent">
 </section>
 
 
-<!-- CHECKOUT -->
-
 <section id="checkout" class="page">
 
 <div class="container">
@@ -1050,8 +1042,6 @@ Enter your delivery information
 </section>
 
 
-<!-- ACCOUNT -->
-
 <section id="account" class="page">
 
 <div class="container">
@@ -1067,8 +1057,6 @@ Enter your delivery information
 
 </section>
 
-
-<!-- ORDERS -->
 
 <section id="orders" class="page">
 
@@ -1093,8 +1081,6 @@ View and manage your orders
 
 </section>
 
-
-<!-- TRACK -->
 
 <section id="track" class="page">
 
@@ -1140,8 +1126,6 @@ style="margin-top:20px">
 </section>
 
 
-<!-- ADMIN -->
-
 <section id="admin" class="page">
 
 <div class="container">
@@ -1153,8 +1137,6 @@ style="margin-top:20px">
 
 </section>
 
-
-<!-- PRIVACY -->
 
 <section id="privacy" class="page">
 
@@ -1181,8 +1163,6 @@ Customers should avoid entering unnecessary sensitive information.
 
 </section>
 
-
-<!-- TERMS -->
 
 <section id="terms" class="page">
 
@@ -1215,8 +1195,6 @@ cancellation options.
 </section>
 
 
-<!-- SHIPPING -->
-
 <section id="shipping" class="page">
 
 <div class="container">
@@ -1242,8 +1220,6 @@ Delivery time can vary depending on location and order processing.
 </section>
 
 
-<!-- RETURNS -->
-
 <section id="returns" class="page">
 
 <div class="container">
@@ -1266,8 +1242,6 @@ order information so the issue can be reviewed.
 </section>
 
 
-<!-- CONTACT -->
-
 <section id="contact" class="page">
 
 <div class="container">
@@ -1289,8 +1263,6 @@ information provided by ZELVO.
 
 </section>
 
-
-<!-- FOOTER -->
 
 <footer>
 
@@ -1377,8 +1349,6 @@ onclick="showPage('admin')">
 
 </footer>
 
-
-<!-- CANCELLATION MODAL -->
 
 <div class="modal"
 id="cancelModal">
@@ -1488,9 +1458,9 @@ Cancel Order
 
 <script>
 
-/* ================================
-   SUPABASE
-================================ */
+/* =========================================================
+   ZELVO SUPABASE CONFIGURATION
+========================================================= */
 
 const SUPABASE_URL =
 "https://pkcwbiisexqclmfzwksz.supabase.co";
@@ -1498,16 +1468,40 @@ const SUPABASE_URL =
 const SUPABASE_KEY =
 "sb_publishable_o3hY4LNmzJDEQJ7vL8iTRQ_K0cnMHYB";
 
-const supabaseClient =
-window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
+let supabaseClient = null;
+
+let supabaseReady = false;
+
+try{
+
+  if(
+    window.supabase &&
+    typeof window.supabase.createClient === "function"
+  ){
+
+    supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+    supabaseReady = true;
+
+  }
+
+}catch(error){
+
+  console.error(
+    "Supabase initialization error:",
+    error
+  );
+
+}
 
 
-/* ================================
+/* =========================================================
    PRODUCTS
-================================ */
+========================================================= */
 
 const products = [
 
@@ -1538,14 +1532,29 @@ image:"https://raw.githubusercontent.com/zaidxyz78686-png/ZELVO/refs/heads/main/
 ];
 
 
-/* ================================
+/* =========================================================
    LOCAL CART ONLY
-================================ */
+========================================================= */
 
-let cart =
-JSON.parse(
-localStorage.getItem("zelvo_cart") || "{}"
-);
+let cart = {};
+
+try{
+
+  cart =
+    JSON.parse(
+      localStorage.getItem("zelvo_cart") || "{}"
+    );
+
+  if(!cart || typeof cart !== "object"){
+    cart = {};
+  }
+
+}catch(error){
+
+  cart = {};
+
+}
+
 
 let currentUser = null;
 
@@ -1558,3111 +1567,3869 @@ let cancelOrderId = null;
 let cancelMode = "";
 
 
-/* ================================
+/* =========================================================
+   SUPABASE CHECK
+========================================================= */
+
+function requireSupabase(){
+
+  if(!supabaseReady){
+
+    alert(
+      "ZELVO connection is not ready. Please refresh the page and try again."
+    );
+
+    return false;
+
+  }
+
+  return true;
+
+}
+
+
+/* =========================================================
    SAVE CART
-================================ */
+========================================================= */
 
 function saveCart(){
 
-localStorage.setItem(
-"zelvo_cart",
-JSON.stringify(cart)
-);
+  try{
+
+    localStorage.setItem(
+      "zelvo_cart",
+      JSON.stringify(cart)
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+  }
 
 }
 
 
-/* ================================
-   AUTH SESSION
-================================ */
-
-async function loadCurrentUser(){
-
-const {
-data
-} =
-await supabaseClient.auth.getSession();
-
-currentUser =
-data.session
-?
-data.session.user
-:
-null;
-
-updateAdminButton();
-
-}
-
-
-/* ================================
+/* =========================================================
    PAGE NAVIGATION
-================================ */
+========================================================= */
 
 function showPage(id){
 
-document.querySelectorAll(".page")
-.forEach(
-page => page.classList.remove("active")
-);
+  document.querySelectorAll(".page")
+    .forEach(function(page){
 
-const target =
-document.getElementById(id);
+      page.classList.remove("active");
 
-if(target){
+    });
 
-target.classList.add("active");
+
+  const target =
+    document.getElementById(id);
+
+
+  if(target){
+
+    target.classList.add("active");
+
+  }
+
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+
+
+  if(id === "cart"){
+
+    renderCart();
+
+  }
+
+
+  if(id === "account"){
+
+    renderAccount();
+
+  }
+
+
+  if(id === "checkout"){
+
+    renderCheckout();
+
+  }
+
+
+  if(id === "orders"){
+
+    renderOrders();
+
+  }
+
+
+  if(id === "admin"){
+
+    if(!adminLogged){
+
+      adminLogin();
+
+    }else{
+
+      renderAdmin();
+
+    }
+
+  }
 
 }
 
-window.scrollTo({
-top:0,
-behavior:"smooth"
-});
 
-
-if(id==="cart"){
-renderCart();
-}
-
-if(id==="account"){
-renderAccount();
-}
-
-if(id==="checkout"){
-renderCheckout();
-}
-
-if(id==="orders"){
-renderOrders();
-}
-
-if(id==="admin"){
-
-if(!adminLogged){
-
-adminLogin();
-
-}else{
-
-renderAdmin();
-
-}
-
-}
-
-}
-
-
-/* ================================
+/* =========================================================
    PRODUCTS
-================================ */
+========================================================= */
 
 function renderProducts(containerId){
 
-const container =
-document.getElementById(containerId);
+  const container =
+    document.getElementById(containerId);
 
-if(!container) return;
-
-
-container.innerHTML =
-products.map(p => {
-
-const qty =
-cart[p.id] || 0;
-
-let actionHTML = "";
+  if(!container) return;
 
 
-if(qty > 0){
+  container.innerHTML =
+    products.map(function(p){
 
-actionHTML = `
+      const qty =
+        Number(cart[p.id] || 0);
 
-<div class="added-controls">
+      let actionHTML = "";
 
-<button
-onclick="changeQty('${p.id}',-1)">
-−
-</button>
 
-<span>
-${qty}
-</span>
+      if(qty > 0){
 
-<button
-onclick="changeQty('${p.id}',1)">
-+
-</button>
+        actionHTML = `
 
-</div>
+        <div class="added-controls">
 
-<div class="added-label">
-Added to cart
-</div>
+          <button
+          type="button"
+          onclick="changeQty('${p.id}',-1)">
+          −
+          </button>
 
-`;
+          <span>
+          ${qty}
+          </span>
 
-}else{
+          <button
+          type="button"
+          onclick="changeQty('${p.id}',1)">
+          +
+          </button>
 
-actionHTML = `
+        </div>
 
-<button
-class="add-btn"
-onclick="addToCart('${p.id}')">
+        <div class="added-label">
+        Added to cart
+        </div>
 
-ADD TO CART
+        `;
 
-</button>
+      }else{
 
-`;
+        actionHTML = `
+
+        <button
+        type="button"
+        class="add-btn"
+        onclick="addToCart('${p.id}')">
+
+        ADD TO CART
+
+        </button>
+
+        `;
+
+      }
+
+
+      return `
+
+      <div class="product-card">
+
+        <img
+        class="product-image"
+        src="${p.image}"
+        alt="${escapeHtml(p.name)}">
+
+        <div class="product-info">
+
+          <div class="product-name">
+          ${escapeHtml(p.name)}
+          </div>
+
+          <div class="old-price">
+          Rs ${p.oldPrice}
+          </div>
+
+          <div class="sale-price">
+          Rs ${p.price}
+          </div>
+
+          ${actionHTML}
+
+        </div>
+
+      </div>
+
+      `;
+
+    }).join("");
 
 }
 
 
-return `
-
-<div class="product-card">
-
-<img
-class="product-image"
-src="${p.image}"
-alt="${escapeHtml(p.name)}"
->
-
-<div class="product-info">
-
-<div class="product-name">
-${escapeHtml(p.name)}
-</div>
-
-<div class="old-price">
-Rs ${p.oldPrice}
-</div>
-
-<div class="sale-price">
-Rs ${p.price}
-</div>
-
-${actionHTML}
-
-</div>
-
-</div>
-
-`;
-
-}).join("");
-
-}
-
-
-/* ================================
-   REFRESH PRODUCTS
-================================ */
+/* =========================================================
+   REFRESH PRODUCT BUTTONS
+========================================================= */
 
 function refreshProductButtons(){
 
-renderProducts("homeProducts");
+  renderProducts("homeProducts");
 
-renderProducts("shopProducts");
+  renderProducts("shopProducts");
 
 }
 
 
-/* ================================
-   ADD CART
-================================ */
+/* =========================================================
+   ADD TO CART
+========================================================= */
 
 function addToCart(id){
 
-cart[id] =
-(cart[id] || 0) + 1;
+  const product =
+    products.find(function(p){
+      return p.id === id;
+    });
 
-saveCart();
+  if(!product) return;
 
-updateCartCount();
 
-refreshProductButtons();
+  cart[id] =
+    Number(cart[id] || 0) + 1;
+
+
+  saveCart();
+
+  updateCartCount();
+
+  refreshProductButtons();
 
 }
 
 
-/* ================================
-   CHANGE QTY
-================================ */
+/* =========================================================
+   CHANGE QUANTITY
+========================================================= */
 
 function changeQty(id,amount){
 
-cart[id] =
-(cart[id] || 0) + amount;
+  cart[id] =
+    Number(cart[id] || 0) + Number(amount);
 
-if(cart[id] <= 0){
 
-delete cart[id];
+  if(cart[id] <= 0){
+
+    delete cart[id];
+
+  }
+
+
+  saveCart();
+
+  updateCartCount();
+
+  refreshProductButtons();
+
+
+  const cartPage =
+    document.getElementById("cart");
+
+
+  if(
+    cartPage &&
+    cartPage.classList.contains("active")
+  ){
+
+    renderCart();
+
+  }
 
 }
 
-saveCart();
 
-updateCartCount();
-
-refreshProductButtons();
-
-
-const cartPage =
-document.getElementById("cart");
-
-if(
-cartPage &&
-cartPage.classList.contains("active")
-){
-
-renderCart();
-
-}
-
-}
-
-
-/* ================================
-   REMOVE
-================================ */
+/* =========================================================
+   REMOVE FROM CART
+========================================================= */
 
 function removeFromCart(id){
 
-delete cart[id];
+  delete cart[id];
 
-saveCart();
+  saveCart();
 
-updateCartCount();
+  updateCartCount();
 
-refreshProductButtons();
+  refreshProductButtons();
 
-renderCart();
+  renderCart();
 
 }
 
 
-/* ================================
+/* =========================================================
    SUBTOTAL
-================================ */
+========================================================= */
 
 function cartSubtotal(){
 
-let total = 0;
+  let total = 0;
 
-products.forEach(p => {
 
-const qty =
-cart[p.id] || 0;
+  products.forEach(function(p){
 
-total +=
-p.price * qty;
+    const qty =
+      Number(cart[p.id] || 0);
 
-});
+    total +=
+      p.price * qty;
 
-return total;
+  });
+
+
+  return total;
 
 }
 
 
-/* ================================
+/* =========================================================
    CART COUNT
-================================ */
+========================================================= */
 
 function updateCartCount(){
 
-let count = 0;
+  let count = 0;
 
-Object.values(cart)
-.forEach(qty => {
 
-count += Number(qty);
+  Object.values(cart)
+    .forEach(function(qty){
 
-});
+      count +=
+        Number(qty) || 0;
 
-document.getElementById(
-"cartCount"
-).textContent = count;
+    });
+
+
+  const countElement =
+    document.getElementById("cartCount");
+
+
+  if(countElement){
+
+    countElement.textContent =
+      count;
+
+  }
 
 }
 
 
-/* ================================
+/* =========================================================
    CART
-================================ */
+========================================================= */
 
 function renderCart(){
 
-const box =
-document.getElementById("cartContent");
+  const box =
+    document.getElementById("cartContent");
 
-if(!box) return;
-
-
-const items =
-products.filter(
-p => cart[p.id] > 0
-);
+  if(!box) return;
 
 
-if(items.length === 0){
+  const items =
+    products.filter(function(p){
 
-box.innerHTML = `
+      return Number(cart[p.id] || 0) > 0;
 
-<div class="empty">
+    });
 
-<h3>
-Your cart is empty
-</h3>
 
-<p>
-Add some products to your cart.
-</p>
+  if(items.length === 0){
 
-<button
-class="primary-btn"
-onclick="showPage('shop')">
+    box.innerHTML = `
 
-SHOP NOW
+    <div class="empty">
 
-</button>
+      <h3>
+      Your cart is empty
+      </h3>
 
-</div>
+      <p>
+      Add some products to your cart.
+      </p>
 
-`;
+      <button
+      type="button"
+      class="primary-btn"
+      onclick="showPage('shop')">
 
-return;
+      SHOP NOW
+
+      </button>
+
+    </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  let html = "";
+
+
+  items.forEach(function(p){
+
+    const qty =
+      Number(cart[p.id]);
+
+
+    html += `
+
+    <div class="cart-item">
+
+      <img
+      src="${p.image}"
+      alt="${escapeHtml(p.name)}">
+
+      <div class="cart-details">
+
+        <div class="cart-name">
+        ${escapeHtml(p.name)}
+        </div>
+
+        <div class="cart-price">
+        Rs ${p.price}
+        </div>
+
+      </div>
+
+
+      <div class="qty-controls">
+
+        <button
+        type="button"
+        onclick="changeQty('${p.id}',-1)">
+        −
+        </button>
+
+        <span>
+        ${qty}
+        </span>
+
+        <button
+        type="button"
+        onclick="changeQty('${p.id}',1)">
+        +
+        </button>
+
+      </div>
+
+
+      <button
+      type="button"
+      class="remove-btn"
+      onclick="removeFromCart('${p.id}')">
+
+      Remove
+
+      </button>
+
+    </div>
+
+    `;
+
+  });
+
+
+  const subtotal =
+    cartSubtotal();
+
+  const delivery = 0;
+
+  const grandTotal =
+    subtotal + delivery;
+
+
+  html += `
+
+  <div class="summary">
+
+    <div class="summary-row">
+
+      <span>
+      Products Subtotal
+      </span>
+
+      <strong>
+      Rs ${subtotal}
+      </strong>
+
+    </div>
+
+
+    <div class="summary-row">
+
+      <span>
+      Delivery Charges
+      </span>
+
+      <strong>
+      Rs ${delivery}
+      </strong>
+
+    </div>
+
+
+    <div class="summary-row grand-total">
+
+      <span>
+      Grand Total
+      </span>
+
+      <span>
+      Rs ${grandTotal}
+      </span>
+
+    </div>
+
+    <br>
+
+    <button
+    type="button"
+    class="primary-btn"
+    style="width:100%"
+    onclick="goCheckout()">
+
+    PROCEED TO CHECKOUT
+
+    </button>
+
+  </div>
+
+  `;
+
+
+  box.innerHTML =
+    html;
 
 }
 
 
-let html = "";
-
-
-items.forEach(p => {
-
-const qty =
-cart[p.id];
-
-html += `
-
-<div class="cart-item">
-
-<img
-src="${p.image}"
-alt="${escapeHtml(p.name)}"
->
-
-<div class="cart-details">
-
-<div class="cart-name">
-${escapeHtml(p.name)}
-</div>
-
-<div class="cart-price">
-Rs ${p.price}
-</div>
-
-</div>
-
-
-<div class="qty-controls">
-
-<button
-onclick="changeQty('${p.id}',-1)">
-−
-</button>
-
-<span>
-${qty}
-</span>
-
-<button
-onclick="changeQty('${p.id}',1)">
-+
-</button>
-
-</div>
-
-
-<button
-class="remove-btn"
-onclick="removeFromCart('${p.id}')">
-
-Remove
-
-</button>
-
-</div>
-
-`;
-
-});
-
-
-const subtotal =
-cartSubtotal();
-
-const delivery = 0;
-
-const grandTotal =
-subtotal + delivery;
-
-
-html += `
-
-<div class="summary">
-
-<div class="summary-row">
-
-<span>
-Products Subtotal
-</span>
-
-<strong>
-Rs ${subtotal}
-</strong>
-
-</div>
-
-
-<div class="summary-row">
-
-<span>
-Delivery Charges
-</span>
-
-<strong>
-Rs ${delivery}
-</strong>
-
-</div>
-
-
-<div class="summary-row grand-total">
-
-<span>
-Grand Total
-</span>
-
-<span>
-Rs ${grandTotal}
-</span>
-
-</div>
-
-<br>
-
-<button
-class="primary-btn"
-style="width:100%"
-onclick="goCheckout()">
-
-PROCEED TO CHECKOUT
-
-</button>
-
-</div>
-
-`;
-
-box.innerHTML = html;
-
-}
-
-
-/* ================================
-   CHECKOUT
-================================ */
+/* =========================================================
+   GO CHECKOUT
+========================================================= */
 
 function goCheckout(){
 
-if(!currentUser){
+  if(!currentUser){
 
-alert(
-"Please login or create an account before checkout."
-);
+    alert(
+      "Please login or create an account before checkout."
+    );
 
-showPage("account");
+    showPage("account");
 
-return;
+    return;
+
+  }
+
+
+  if(
+    Object.keys(cart).length === 0
+  ){
+
+    alert(
+      "Your cart is empty."
+    );
+
+    showPage("shop");
+
+    return;
+
+  }
+
+
+  showPage("checkout");
 
 }
 
 
-if(Object.keys(cart).length === 0){
-
-alert(
-"Your cart is empty."
-);
-
-showPage("shop");
-
-return;
-
-}
-
-showPage("checkout");
-
-}
-
-
-/* ================================
+/* =========================================================
    ACCOUNT
-================================ */
+========================================================= */
 
 function renderAccount(){
 
-const box =
-document.getElementById("accountContent");
+  const box =
+    document.getElementById("accountContent");
 
-if(!box) return;
+  if(!box) return;
 
 
-if(currentUser){
+  if(currentUser){
 
-box.innerHTML = `
+    box.innerHTML = `
 
-<h2>
-My Account
-</h2>
+    <h2>
+    My Account
+    </h2>
 
-<div class="success">
+    <div class="success">
 
-You are logged in as
+    You are logged in as
 
-<strong>
-${escapeHtml(currentUser.email)}
-</strong>.
+    <strong>
+    ${escapeHtml(currentUser.email)}
+    </strong>.
 
-</div>
+    </div>
 
-<br>
+    <br>
 
-<button
-class="primary-btn"
-onclick="showPage('orders')">
+    <button
+    type="button"
+    class="primary-btn"
+    onclick="showPage('orders')">
 
-MY ORDERS
+    MY ORDERS
 
-</button>
+    </button>
 
-<button
-class="remove-btn"
-style="margin-left:8px"
-onclick="logout()">
+    <button
+    type="button"
+    class="remove-btn"
+    style="margin-left:8px"
+    onclick="logout()">
 
-LOGOUT
+    LOGOUT
 
-</button>
+    </button>
 
-`;
+    `;
 
-return;
+    return;
+
+  }
+
+
+  box.innerHTML = `
+
+  <div class="tabs">
+
+    <button
+    type="button"
+    id="loginTab"
+    class="active"
+    onclick="showLoginForm()">
+
+    LOGIN
+
+    </button>
+
+    <button
+    type="button"
+    id="registerTab"
+    onclick="showRegisterForm()">
+
+    REGISTER
+
+    </button>
+
+  </div>
+
+  <div id="authForm">
+  </div>
+
+  `;
+
+
+  showLoginForm();
 
 }
 
 
-box.innerHTML = `
-
-<div class="tabs">
-
-<button
-id="loginTab"
-class="active"
-onclick="showLoginForm()">
-
-LOGIN
-
-</button>
-
-<button
-id="registerTab"
-onclick="showRegisterForm()">
-
-REGISTER
-
-</button>
-
-</div>
-
-<div id="authForm">
-</div>
-
-`;
-
-showLoginForm();
-
-}
-
-
-/* ================================
+/* =========================================================
    LOGIN FORM
-================================ */
+========================================================= */
 
 function showLoginForm(){
 
-document.getElementById(
-"loginTab"
-).classList.add("active");
+  const loginTab =
+    document.getElementById("loginTab");
 
-document.getElementById(
-"registerTab"
-).classList.remove("active");
+  const registerTab =
+    document.getElementById("registerTab");
 
-
-document.getElementById(
-"authForm"
-).innerHTML = `
-
-<h2>
-Login
-</h2>
-
-<div class="form-group">
-
-<label>
-Email
-</label>
-
-<input
-id="loginEmail"
-type="email"
-placeholder="Enter your email">
-
-</div>
+  const authForm =
+    document.getElementById("authForm");
 
 
-<div class="form-group">
+  if(!loginTab || !registerTab || !authForm){
 
-<label>
-Password
-</label>
+    return;
 
-<input
-id="loginPassword"
-type="password"
-placeholder="Enter your password">
-
-</div>
+  }
 
 
-<button
-class="primary-btn"
-style="width:100%"
-onclick="login()">
+  loginTab.classList.add("active");
 
-LOGIN
+  registerTab.classList.remove("active");
 
-</button>
 
-`;
+  authForm.innerHTML = `
+
+  <h2>
+  Login
+  </h2>
+
+  <div class="form-group">
+
+    <label>
+    Email
+    </label>
+
+    <input
+    id="loginEmail"
+    type="email"
+    placeholder="Enter your email">
+
+  </div>
+
+
+  <div class="form-group">
+
+    <label>
+    Password
+    </label>
+
+    <input
+    id="loginPassword"
+    type="password"
+    placeholder="Enter your password">
+
+  </div>
+
+
+  <button
+  type="button"
+  class="primary-btn"
+  style="width:100%"
+  onclick="login()">
+
+  LOGIN
+
+  </button>
+
+  `;
 
 }
 
 
-/* ================================
+/* =========================================================
    REGISTER FORM
-================================ */
+========================================================= */
 
 function showRegisterForm(){
 
-document.getElementById(
-"registerTab"
-).classList.add("active");
+  const loginTab =
+    document.getElementById("loginTab");
 
-document.getElementById(
-"loginTab"
-).classList.remove("active");
+  const registerTab =
+    document.getElementById("registerTab");
 
-
-document.getElementById(
-"authForm"
-).innerHTML = `
-
-<h2>
-Create Account
-</h2>
-
-<div class="form-group">
-
-<label>
-Email
-</label>
-
-<input
-id="registerEmail"
-type="email"
-placeholder="Enter your email">
-
-</div>
+  const authForm =
+    document.getElementById("authForm");
 
 
-<div class="form-group">
+  if(!loginTab || !registerTab || !authForm){
 
-<label>
-Password
-</label>
+    return;
 
-<input
-id="registerPassword"
-type="password"
-placeholder="Create a password">
-
-</div>
+  }
 
 
-<button
-class="primary-btn"
-style="width:100%"
-onclick="register()">
+  registerTab.classList.add("active");
 
-CREATE ACCOUNT
+  loginTab.classList.remove("active");
 
-</button>
 
-`;
+  authForm.innerHTML = `
+
+  <h2>
+  Create Account
+  </h2>
+
+  <div class="form-group">
+
+    <label>
+    Email
+    </label>
+
+    <input
+    id="registerEmail"
+    type="email"
+    placeholder="Enter your email">
+
+  </div>
+
+
+  <div class="form-group">
+
+    <label>
+    Password
+    </label>
+
+    <input
+    id="registerPassword"
+    type="password"
+    placeholder="Create a password">
+
+  </div>
+
+
+  <button
+  type="button"
+  class="primary-btn"
+  style="width:100%"
+  onclick="register()">
+
+  CREATE ACCOUNT
+
+  </button>
+
+  `;
 
 }
 
 
-/* ================================
+/* =========================================================
    REGISTER
-================================ */
+========================================================= */
 
 async function register(){
 
-const email =
-document.getElementById(
-"registerEmail"
-).value.trim().toLowerCase();
-
-const password =
-document.getElementById(
-"registerPassword"
-).value;
+  if(!requireSupabase()) return;
 
 
-if(!email || !password){
+  const emailElement =
+    document.getElementById("registerEmail");
 
-alert(
-"Please fill all fields."
-);
+  const passwordElement =
+    document.getElementById("registerPassword");
 
-return;
+
+  if(!emailElement || !passwordElement){
+
+    alert(
+      "Registration form is not ready. Please try again."
+    );
+
+    return;
+
+  }
+
+
+  const email =
+    emailElement.value
+      .trim()
+      .toLowerCase();
+
+
+  const password =
+    passwordElement.value;
+
+
+  if(!email || !password){
+
+    alert(
+      "Please fill all fields."
+    );
+
+    return;
+
+  }
+
+
+  if(password.length < 6){
+
+    alert(
+      "Password must be at least 6 characters."
+    );
+
+    return;
+
+  }
+
+
+  const result =
+    await supabaseClient.auth.signUp({
+
+      email:email,
+
+      password:password
+
+    });
+
+
+  const data =
+    result.data;
+
+  const error =
+    result.error;
+
+
+  if(error){
+
+    alert(
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  if(
+    data &&
+    data.session &&
+    data.user
+  ){
+
+    currentUser =
+      data.user;
+
+
+    await checkAdminStatus();
+
+
+    alert(
+      "Account created successfully."
+    );
+
+
+    renderAccount();
+
+  }else{
+
+    alert(
+      "Account created successfully. Please check your email to verify your account, then login."
+    );
+
+
+    showLoginForm();
+
+  }
 
 }
 
 
-if(password.length < 6){
-
-alert(
-"Password must be at least 6 characters."
-);
-
-return;
-
-}
-
-
-const {
-data,
-error
-} =
-await supabaseClient.auth.signUp({
-
-email:email,
-
-password:password
-
-});
-
-
-if(error){
-
-alert(
-error.message
-);
-
-return;
-
-}
-
-
-if(data.session){
-
-currentUser =
-data.session.user;
-
-alert(
-"Account created successfully."
-);
-
-renderAccount();
-
-}else{
-
-alert(
-"Account created successfully. Please check your email to verify your account, then login."
-);
-
-showLoginForm();
-
-}
-
-}
-
-
-/* ================================
+/* =========================================================
    LOGIN
-================================ */
+========================================================= */
 
 async function login(){
 
-const email =
-document.getElementById(
-"loginEmail"
-).value.trim().toLowerCase();
-
-const password =
-document.getElementById(
-"loginPassword"
-).value;
+  if(!requireSupabase()) return;
 
 
-if(!email || !password){
+  const emailElement =
+    document.getElementById("loginEmail");
 
-alert(
-"Please fill all fields."
-);
+  const passwordElement =
+    document.getElementById("loginPassword");
 
-return;
+
+  if(!emailElement || !passwordElement){
+
+    alert(
+      "Login form is not ready. Please try again."
+    );
+
+    return;
+
+  }
+
+
+  const email =
+    emailElement.value
+      .trim()
+      .toLowerCase();
+
+
+  const password =
+    passwordElement.value;
+
+
+  if(!email || !password){
+
+    alert(
+      "Please fill all fields."
+    );
+
+    return;
+
+  }
+
+
+  const result =
+    await supabaseClient.auth.signInWithPassword({
+
+      email:email,
+
+      password:password
+
+    });
+
+
+  const data =
+    result.data;
+
+  const error =
+    result.error;
+
+
+  if(error){
+
+    alert(
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  currentUser =
+    data.user;
+
+
+  await checkAdminStatus();
+
+
+  alert(
+    "Login successful."
+  );
+
+
+  renderAccount();
 
 }
 
 
-const {
-data,
-error
-} =
-await supabaseClient.auth.signInWithPassword({
-
-email:email,
-
-password:password
-
-});
-
-
-if(error){
-
-alert(
-error.message
-);
-
-return;
-
-}
-
-
-currentUser =
-data.user;
-
-await checkAdminStatus();
-
-alert(
-"Login successful."
-);
-
-renderAccount();
-
-}
-
-
-/* ================================
+/* =========================================================
    LOGOUT
-================================ */
+========================================================= */
 
 async function logout(){
 
-await supabaseClient.auth.signOut();
+  if(!requireSupabase()) return;
 
-currentUser = null;
 
-adminLogged = false;
+  const {error} =
+    await supabaseClient.auth.signOut();
 
-updateAdminButton();
 
-renderAccount();
+  if(error){
 
-alert(
-"You have been logged out."
-);
+    alert(
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  currentUser = null;
+
+  adminLogged = false;
+
+  orders = [];
+
+  updateAdminButton();
+
+  renderAccount();
+
+
+  alert(
+    "You have been logged out."
+  );
 
 }
 
 
-/* ================================
+/* =========================================================
    CHECKOUT
-================================ */
+========================================================= */
 
 function renderCheckout(){
 
-const box =
-document.getElementById(
-"checkoutContent"
-);
+  const box =
+    document.getElementById("checkoutContent");
 
-if(!box) return;
+  if(!box) return;
 
 
-if(!currentUser){
+  if(!currentUser){
 
-box.innerHTML = `
+    box.innerHTML = `
 
-<div class="card">
+    <div class="card">
 
-<div class="danger">
+      <div class="danger">
 
-Please login before checkout.
+      Please login before checkout.
 
-</div>
+      </div>
 
-<br>
+      <br>
 
-<button
-class="primary-btn"
-onclick="showPage('account')">
+      <button
+      type="button"
+      class="primary-btn"
+      onclick="showPage('account')">
 
-LOGIN
+      LOGIN
 
-</button>
+      </button>
 
-</div>
+    </div>
 
-`;
+    `;
 
-return;
+    return;
+
+  }
+
+
+  if(
+    Object.keys(cart).length === 0
+  ){
+
+    box.innerHTML = `
+
+    <div class="card">
+
+      <div class="notice">
+
+      Your cart is empty.
+
+      </div>
+
+      <button
+      type="button"
+      class="primary-btn"
+      onclick="showPage('shop')">
+
+      SHOP NOW
+
+      </button>
+
+    </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  const subtotal =
+    cartSubtotal();
+
+
+  box.innerHTML = `
+
+  <div class="card">
+
+    <h2>
+    Delivery Information
+    </h2>
+
+
+    <div class="form-grid">
+
+
+      <div class="form-group">
+
+        <label>
+        Full Name *
+        </label>
+
+        <input
+        id="customerName"
+        required
+        placeholder="Enter full name">
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>
+        Mobile Number *
+        </label>
+
+        <input
+        id="customerMobile"
+        required
+        placeholder="03XXXXXXXXX">
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>
+        Email
+        </label>
+
+        <input
+        id="customerEmail"
+        value="${escapeHtml(currentUser.email)}"
+        readonly>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>
+        City *
+        </label>
+
+        <input
+        id="customerCity"
+        required
+        placeholder="Enter city">
+
+      </div>
+
+
+      <div class="form-group full">
+
+        <label>
+        Complete Address *
+        </label>
+
+        <textarea
+        id="customerAddress"
+        required
+        placeholder="Enter complete delivery address"></textarea>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>
+        Province *
+        </label>
+
+        <select id="customerProvince">
+
+          <option value="">
+          Select Province
+          </option>
+
+          <option value="PUNJAB">
+          PUNJAB
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="form-group">
+
+        <label>
+        Payment Method *
+        </label>
+
+        <select
+        id="paymentMethod"
+        onchange="paymentMethodChanged()">
+
+          <option value="COD">
+          Cash on Delivery
+          </option>
+
+          <option value="JazzCash">
+          JazzCash
+          </option>
+
+          <option value="EasyPaisa">
+          EasyPaisa
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <div
+    class="payment-box"
+    id="paymentBox"
+    style="display:none">
+
+      <h3>
+      SEND PAYMENT BEFORE ORDER
+      </h3>
+
+      <p>
+
+      JazzCash / EasyPaisa Number:
+
+      <strong>
+      03217819034
+      </strong>
+
+      </p>
+
+      <p>
+      After payment, upload your payment screenshot.
+      </p>
+
+
+      <div class="form-group">
+
+        <label>
+        Payment Screenshot *
+        </label>
+
+        <input
+        id="paymentScreenshot"
+        type="file"
+        accept="image/*">
+
+      </div>
+
+    </div>
+
+
+    <div class="summary">
+
+      <div class="summary-row">
+
+        <span>
+        Products Subtotal
+        </span>
+
+        <strong>
+        Rs ${subtotal}
+        </strong>
+
+      </div>
+
+
+      <div class="summary-row">
+
+        <span>
+        Delivery Charges
+        </span>
+
+        <strong>
+        Rs 0
+        </strong>
+
+      </div>
+
+
+      <div class="summary-row grand-total">
+
+        <span>
+        Grand Total
+        </span>
+
+        <span>
+        Rs ${subtotal}
+        </span>
+
+      </div>
+
+    </div>
+
+    <br>
+
+
+    <button
+    type="button"
+    class="primary-btn"
+    style="width:100%"
+    onclick="placeOrder()">
+
+    PLACE ORDER
+
+    </button>
+
+  </div>
+
+  `;
 
 }
 
 
-if(Object.keys(cart).length === 0){
-
-box.innerHTML = `
-
-<div class="card">
-
-<div class="notice">
-
-Your cart is empty.
-
-</div>
-
-<button
-class="primary-btn"
-onclick="showPage('shop')">
-
-SHOP NOW
-
-</button>
-
-</div>
-
-`;
-
-return;
-
-}
-
-
-const subtotal =
-cartSubtotal();
-
-
-box.innerHTML = `
-
-<div class="card">
-
-<h2>
-Delivery Information
-</h2>
-
-
-<div class="form-grid">
-
-
-<div class="form-group">
-
-<label>
-Full Name *
-</label>
-
-<input
-id="customerName"
-required
-placeholder="Enter full name">
-
-</div>
-
-
-<div class="form-group">
-
-<label>
-Mobile Number *
-</label>
-
-<input
-id="customerMobile"
-required
-placeholder="03XXXXXXXXX">
-
-</div>
-
-
-<div class="form-group">
-
-<label>
-Email
-</label>
-
-<input
-id="customerEmail"
-value="${escapeHtml(currentUser.email)}"
-readonly>
-
-</div>
-
-
-<div class="form-group">
-
-<label>
-City *
-</label>
-
-<input
-id="customerCity"
-required
-placeholder="Enter city">
-
-</div>
-
-
-<div class="form-group full">
-
-<label>
-Complete Address *
-</label>
-
-<textarea
-id="customerAddress"
-required
-placeholder="Enter complete delivery address"></textarea>
-
-</div>
-
-
-<div class="form-group">
-
-<label>
-Province *
-</label>
-
-<select id="customerProvince">
-
-<option value="">
-Select Province
-</option>
-
-<option value="PUNJAB">
-PUNJAB
-</option>
-
-</select>
-
-</div>
-
-
-<div class="form-group">
-
-<label>
-Payment Method *
-</label>
-
-<select
-id="paymentMethod"
-onchange="paymentMethodChanged()">
-
-<option value="COD">
-Cash on Delivery
-</option>
-
-<option value="JazzCash">
-JazzCash
-</option>
-
-<option value="EasyPaisa">
-EasyPaisa
-</option>
-
-</select>
-
-</div>
-
-</div>
-
-
-<div
-class="payment-box"
-id="paymentBox"
-style="display:none">
-
-<h3>
-SEND PAYMENT BEFORE ORDER
-</h3>
-
-<p>
-
-JazzCash / EasyPaisa Number:
-
-<strong>
-03217819034
-</strong>
-
-</p>
-
-<p>
-After payment, upload your payment screenshot.
-</p>
-
-
-<div class="form-group">
-
-<label>
-Payment Screenshot *
-</label>
-
-<input
-id="paymentScreenshot"
-type="file"
-accept="image/*">
-
-</div>
-
-</div>
-
-
-<div class="summary">
-
-<div class="summary-row">
-
-<span>
-Products Subtotal
-</span>
-
-<strong>
-Rs ${subtotal}
-</strong>
-
-</div>
-
-
-<div class="summary-row">
-
-<span>
-Delivery Charges
-</span>
-
-<strong>
-Rs 0
-</strong>
-
-</div>
-
-
-<div class="summary-row grand-total">
-
-<span>
-Grand Total
-</span>
-
-<span>
-Rs ${subtotal}
-</span>
-
-</div>
-
-</div>
-
-<br>
-
-
-<button
-class="primary-btn"
-style="width:100%"
-onclick="placeOrder()">
-
-PLACE ORDER
-
-</button>
-
-</div>
-
-`;
-
-}
-
-
-/* ================================
-   PAYMENT
-================================ */
+/* =========================================================
+   PAYMENT METHOD
+========================================================= */
 
 function paymentMethodChanged(){
 
-const method =
-document.getElementById(
-"paymentMethod"
-).value;
+  const methodElement =
+    document.getElementById("paymentMethod");
 
-const box =
-document.getElementById(
-"paymentBox"
-);
+  const box =
+    document.getElementById("paymentBox");
 
 
-if(
-method === "JazzCash" ||
-method === "EasyPaisa"
-){
+  if(!methodElement || !box) return;
 
-box.style.display =
-"block";
 
-}else{
+  const method =
+    methodElement.value;
 
-box.style.display =
-"none";
+
+  if(
+    method === "JazzCash" ||
+    method === "EasyPaisa"
+  ){
+
+    box.style.display =
+      "block";
+
+  }else{
+
+    box.style.display =
+      "none";
+
+  }
 
 }
 
-}
 
-
-/* ================================
+/* =========================================================
    PAYMENT SCREENSHOT UPLOAD
-================================ */
+========================================================= */
 
 async function uploadPaymentScreenshot(
-file,
-orderId
+  file,
+  orderId
 ){
 
-if(!file) return null;
+  if(!file) return null;
 
 
-if(file.size > 5 * 1024 * 1024){
+  if(
+    file.size >
+    5 * 1024 * 1024
+  ){
 
-throw new Error(
-"Payment screenshot must be smaller than 5 MB."
-);
+    throw new Error(
+      "Payment screenshot must be smaller than 5 MB."
+    );
+
+  }
+
+
+  if(
+    !file.type ||
+    !file.type.startsWith("image/")
+  ){
+
+    throw new Error(
+      "Please upload an image payment screenshot."
+    );
+
+  }
+
+
+  const originalName =
+    file.name || "payment.jpg";
+
+
+  let extension =
+    originalName
+      .split(".")
+      .pop()
+      .toLowerCase();
+
+
+  if(!extension || extension.length > 10){
+
+    extension = "jpg";
+
+  }
+
+
+  const path =
+    currentUser.id +
+    "/" +
+    orderId +
+    "." +
+    extension;
+
+
+  const result =
+    await supabaseClient.storage
+      .from("zelvo-payment-screenshots")
+      .upload(
+        path,
+        file,
+        {
+          upsert:true,
+          contentType:file.type
+        }
+      );
+
+
+  if(result.error){
+
+    throw result.error;
+
+  }
+
+
+  return path;
 
 }
 
 
-const extension =
-file.name.split(".").pop() || "jpg";
-
-
-const path =
-currentUser.id +
-"/" +
-orderId +
-"." +
-extension;
-
-
-const {
-error
-} =
-await supabaseClient.storage
-.from("zelvo-payment-screenshots")
-.upload(
-path,
-file,
-{
-upsert:true,
-contentType:file.type
-}
-);
-
-
-if(error){
-
-throw error;
-
-}
-
-
-return path;
-
-}
-
-
-/* ================================
+/* =========================================================
    PLACE ORDER
-================================ */
+========================================================= */
 
 async function placeOrder(){
 
-if(!currentUser){
+  if(!requireSupabase()) return;
 
-alert(
-"Please login first."
-);
 
-showPage("account");
+  if(!currentUser){
 
-return;
+    alert(
+      "Please login first."
+    );
+
+    showPage("account");
+
+    return;
+
+  }
+
+
+  if(
+    Object.keys(cart).length === 0
+  ){
+
+    alert(
+      "Your cart is empty."
+    );
+
+    showPage("shop");
+
+    return;
+
+  }
+
+
+  const nameElement =
+    document.getElementById("customerName");
+
+  const mobileElement =
+    document.getElementById("customerMobile");
+
+  const addressElement =
+    document.getElementById("customerAddress");
+
+  const cityElement =
+    document.getElementById("customerCity");
+
+  const provinceElement =
+    document.getElementById("customerProvince");
+
+  const methodElement =
+    document.getElementById("paymentMethod");
+
+
+  if(
+    !nameElement ||
+    !mobileElement ||
+    !addressElement ||
+    !cityElement ||
+    !provinceElement ||
+    !methodElement
+  ){
+
+    alert(
+      "Checkout form is not ready. Please refresh and try again."
+    );
+
+    return;
+
+  }
+
+
+  const name =
+    nameElement.value.trim();
+
+  const mobile =
+    mobileElement.value.trim();
+
+  const address =
+    addressElement.value.trim();
+
+  const city =
+    cityElement.value.trim();
+
+  const province =
+    provinceElement.value;
+
+  const method =
+    methodElement.value;
+
+
+  if(
+    !name ||
+    !mobile ||
+    !address ||
+    !city ||
+    !province
+  ){
+
+    alert(
+      "Please fill all required fields."
+    );
+
+    return;
+
+  }
+
+
+  let screenshotFile = null;
+
+
+  if(
+    method === "JazzCash" ||
+    method === "EasyPaisa"
+  ){
+
+    const fileInput =
+      document.getElementById(
+        "paymentScreenshot"
+      );
+
+
+    if(
+      !fileInput ||
+      !fileInput.files ||
+      !fileInput.files[0]
+    ){
+
+      alert(
+        "Payment screenshot is required."
+      );
+
+      return;
+
+    }
+
+
+    screenshotFile =
+      fileInput.files[0];
+
+  }
+
+
+  const orderId =
+    "ZELVO-" +
+    Date.now()
+      .toString()
+      .slice(-8);
+
+
+  const subtotal =
+    cartSubtotal();
+
+
+  let screenshotPath = null;
+
+
+  try{
+
+    if(screenshotFile){
+
+      screenshotPath =
+        await uploadPaymentScreenshot(
+          screenshotFile,
+          orderId
+        );
+
+    }
+
+
+    const orderData = {
+
+      order_id:orderId,
+
+      user_id:currentUser.id,
+
+      customer_name:name,
+
+      mobile:mobile,
+
+      email:currentUser.email,
+
+      address:address,
+
+      city:city,
+
+      province:province,
+
+      gluta_qty:Number(cart.gluta || 0),
+
+      multi_qty:Number(cart.multi || 0),
+
+      anti_age_qty:Number(cart.antiAge || 0),
+
+      subtotal:Number(subtotal),
+
+      delivery:0,
+
+      grand_total:Number(subtotal),
+
+      payment_method:method,
+
+      payment_screenshot:screenshotPath,
+
+      status:"Pending",
+
+      cancellation_reason:null,
+
+      cancelled_by:null
+
+    };
+
+
+    const result =
+      await supabaseClient
+        .from("zelvo_orders")
+        .insert(orderData);
+
+
+    if(result.error){
+
+      /*
+        If the order insert fails after the screenshot
+        was uploaded, remove that screenshot so that
+        unused files are not left behind.
+      */
+
+      if(screenshotPath){
+
+        await supabaseClient.storage
+          .from("zelvo-payment-screenshots")
+          .remove([screenshotPath]);
+
+      }
+
+
+      throw result.error;
+
+    }
+
+
+    cart = {};
+
+    saveCart();
+
+    updateCartCount();
+
+    refreshProductButtons();
+
+
+    alert(
+      "ORDER PLACED!\n\nYour Order ID is:\n" +
+      orderId
+    );
+
+
+    showPage("orders");
+
+
+    await renderOrders();
+
+
+  }catch(error){
+
+    console.error(
+      "PLACE ORDER ERROR:",
+      error
+    );
+
+
+    alert(
+      "Order could not be placed.\n\n" +
+      (error.message || "Unknown error")
+    );
+
+  }
 
 }
 
 
-const name =
-document.getElementById(
-"customerName"
-).value.trim();
-
-const mobile =
-document.getElementById(
-"customerMobile"
-).value.trim();
-
-const address =
-document.getElementById(
-"customerAddress"
-).value.trim();
-
-const city =
-document.getElementById(
-"customerCity"
-).value.trim();
-
-const province =
-document.getElementById(
-"customerProvince"
-).value;
-
-const method =
-document.getElementById(
-"paymentMethod"
-).value;
-
-
-if(
-!name ||
-!mobile ||
-!address ||
-!city ||
-!province
-){
-
-alert(
-"Please fill all required fields."
-);
-
-return;
-
-}
-
-
-let screenshotPath = null;
-
-
-if(
-method === "JazzCash" ||
-method === "EasyPaisa"
-){
-
-const fileInput =
-document.getElementById(
-"paymentScreenshot"
-);
-
-
-if(
-!fileInput ||
-!fileInput.files ||
-!fileInput.files[0]
-){
-
-alert(
-"Payment screenshot is required."
-);
-
-return;
-
-}
-
-}
-
-
-const orderId =
-"ZELVO-" +
-Date.now().toString().slice(-8);
-
-
-const subtotal =
-cartSubtotal();
-
-
-let screenshotFile = null;
-
-
-if(
-method === "JazzCash" ||
-method === "EasyPaisa"
-){
-
-screenshotFile =
-document.getElementById(
-"paymentScreenshot"
-).files[0];
-
-}
-
-
-try{
-
-if(screenshotFile){
-
-screenshotPath =
-await uploadPaymentScreenshot(
-screenshotFile,
-orderId
-);
-
-}
-
-
-const {
-error
-} =
-await supabaseClient
-.from("zelvo_orders")
-.insert({
-
-order_id:orderId,
-
-user_id:currentUser.id,
-
-customer_name:name,
-
-mobile:mobile,
-
-email:currentUser.email,
-
-address:address,
-
-city:city,
-
-province:province,
-
-gluta_qty:cart.gluta || 0,
-
-multi_qty:cart.multi || 0,
-
-anti_age_qty:cart.antiAge || 0,
-
-subtotal:subtotal,
-
-delivery:0,
-
-grand_total:subtotal,
-
-payment_method:method,
-
-payment_screenshot:screenshotPath,
-
-status:"Pending",
-
-cancellation_reason:null,
-
-cancelled_by:null
-
-});
-
-
-if(error){
-
-throw error;
-
-}
-
-
-cart = {};
-
-saveCart();
-
-updateCartCount();
-
-refreshProductButtons();
-
-
-alert(
-"ORDER PLACED!\n\nYour Order ID is:\n" +
-orderId
-);
-
-showPage("orders");
-
-await loadOrders();
-
-
-}catch(error){
-
-console.error(error);
-
-alert(
-"Order could not be placed.\n\n" +
-error.message
-);
-
-}
-
-}
-
-
-/* ================================
+/* =========================================================
    GET CUSTOMER ORDERS
-================================ */
+========================================================= */
 
 async function loadOrders(){
 
-if(!currentUser){
+  if(!currentUser){
 
-orders = [];
+    orders = [];
 
-return;
+    return false;
+
+  }
+
+
+  if(!requireSupabase()){
+
+    return false;
+
+  }
+
+
+  const result =
+    await supabaseClient
+      .from("zelvo_orders")
+      .select("*")
+      .eq("user_id",currentUser.id)
+      .order(
+        "created_at",
+        {
+          ascending:false
+        }
+      );
+
+
+  if(result.error){
+
+    console.error(
+      "LOAD ORDERS ERROR:",
+      result.error
+    );
+
+
+    orders = [];
+
+
+    return false;
+
+  }
+
+
+  orders =
+    result.data || [];
+
+
+  return true;
 
 }
 
 
-const {
-data,
-error
-} =
-await supabaseClient
-.from("zelvo_orders")
-.select("*")
-.eq("user_id",currentUser.id)
-.order("created_at",{ascending:false});
-
-
-if(error){
-
-console.error(error);
-
-alert(
-"Could not load orders.\n\n" +
-error.message
-);
-
-return;
-
-}
-
-
-orders =
-data || [];
-
-}
-
-
-/* ================================
+/* =========================================================
    ORDER PRODUCTS TEXT
-================================ */
+========================================================= */
 
 function getOrderProducts(order){
 
-let list = [];
+  let list = [];
 
 
-if(Number(order.gluta_qty) > 0){
+  if(
+    Number(order.gluta_qty) > 0
+  ){
 
-list.push(
-"Gluta White Cream × " +
-Number(order.gluta_qty)
-);
+    list.push(
+      "Gluta White Cream × " +
+      Number(order.gluta_qty)
+    );
+
+  }
+
+
+  if(
+    Number(order.multi_qty) > 0
+  ){
+
+    list.push(
+      "Multi Vitamin Serum × " +
+      Number(order.multi_qty)
+    );
+
+  }
+
+
+  if(
+    Number(order.anti_age_qty) > 0
+  ){
+
+    list.push(
+      "Fairness & Anti-Aging Serum × " +
+      Number(order.anti_age_qty)
+    );
+
+  }
+
+
+  return list
+    .map(function(item){
+
+      return escapeHtml(item);
+
+    })
+    .join("<br>");
 
 }
 
 
-if(Number(order.multi_qty) > 0){
-
-list.push(
-"Multi Vitamin Serum × " +
-Number(order.multi_qty)
-);
-
-}
-
-
-if(Number(order.anti_age_qty) > 0){
-
-list.push(
-"Fairness & Anti-Aging Serum × " +
-Number(order.anti_age_qty)
-);
-
-}
-
-
-return list
-.map(escapeHtml)
-.join("<br>");
-
-}
-
-
-/* ================================
+/* =========================================================
    MY ORDERS
-================================ */
+========================================================= */
 
 async function renderOrders(){
 
-const box =
-document.getElementById(
-"ordersContent"
-);
+  const box =
+    document.getElementById("ordersContent");
 
-if(!box) return;
+  if(!box) return;
 
 
-if(!currentUser){
+  if(!currentUser){
 
-box.innerHTML = `
+    box.innerHTML = `
 
-<div class="card">
+    <div class="card">
 
-<div class="notice">
+      <div class="notice">
 
-Please login to view your orders.
+      Please login to view your orders.
 
-</div>
+      </div>
 
-<button
-class="primary-btn"
-onclick="showPage('account')">
+      <button
+      type="button"
+      class="primary-btn"
+      onclick="showPage('account')">
 
-LOGIN
+      LOGIN
 
-</button>
+      </button>
 
-</div>
+    </div>
 
-`;
+    `;
 
-return;
+    return;
+
+  }
+
+
+  box.innerHTML = `
+
+  <div class="card">
+
+    Loading your orders...
+
+  </div>
+
+  `;
+
+
+  const loaded =
+    await loadOrders();
+
+
+  if(!loaded){
+
+    box.innerHTML = `
+
+    <div class="card">
+
+      <div class="danger">
+
+      Could not load your orders.
+      Please refresh the page and try again.
+
+      </div>
+
+    </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  if(orders.length === 0){
+
+    box.innerHTML = `
+
+    <div class="card empty">
+
+      <h3>
+      No orders yet
+      </h3>
+
+      <button
+      type="button"
+      class="primary-btn"
+      onclick="showPage('shop')">
+
+      SHOP NOW
+
+      </button>
+
+    </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  box.innerHTML =
+    orders
+      .map(function(order){
+
+        const productText =
+          getOrderProducts(order);
+
+
+        let statusClass =
+          "status";
+
+
+        if(
+          order.status === "Delivered"
+        ){
+
+          statusClass =
+            "status status-delivered";
+
+        }
+
+        else if(
+          order.status === "Cancelled"
+        ){
+
+          statusClass =
+            "status status-cancelled";
+
+        }
+
+        else if(
+          order.status === "Pending"
+        ){
+
+          statusClass =
+            "status status-pending";
+
+        }
+
+
+        let cancelButton = "";
+
+
+        if(
+          order.status !== "Delivered" &&
+          order.status !== "Cancelled"
+        ){
+
+          cancelButton = `
+
+          <button
+          type="button"
+          class="cancel-btn"
+          onclick="openCustomerCancelModal('${escapeHtml(order.order_id)}')">
+
+          CANCEL ORDER
+
+          </button>
+
+          `;
+
+        }
+
+
+        const orderDate =
+          order.created_at
+          ?
+          new Date(
+            order.created_at
+          ).toLocaleString()
+          :
+          "";
+
+
+        return `
+
+        <div class="order-card">
+
+          <div class="order-top">
+
+            <div>
+
+              <strong>
+              ${escapeHtml(order.order_id)}
+              </strong>
+
+              <div
+              style="color:#777;font-size:13px;margin-top:5px">
+
+              ${escapeHtml(orderDate)}
+
+              </div>
+
+            </div>
+
+
+            <span class="${statusClass}">
+
+            ${escapeHtml(order.status)}
+
+            </span>
+
+          </div>
+
+
+          <div
+          class="order-products"
+          style="margin-top:12px">
+
+          ${productText}
+
+          </div>
+
+
+          <div style="margin-top:10px">
+
+            <strong>
+            Grand Total: Rs ${Number(order.grand_total)}
+            </strong>
+
+          </div>
+
+
+          <div
+          style="margin-top:8px;color:#666">
+
+          Payment:
+          ${escapeHtml(order.payment_method)}
+
+          </div>
+
+
+          ${
+            order.cancellation_reason
+            ?
+            `
+
+            <div
+            style="margin-top:10px;color:#b00000">
+
+              <strong>
+              Cancellation Reason:
+              </strong>
+
+              ${escapeHtml(
+                order.cancellation_reason
+              )}
+
+              <br>
+
+              <strong>
+              Cancelled By:
+              </strong>
+
+              ${escapeHtml(
+                order.cancelled_by || ""
+              )}
+
+            </div>
+
+            `
+            :
+            ""
+          }
+
+
+          ${
+            cancelButton
+            ?
+            `
+
+            <div style="margin-top:14px">
+
+              ${cancelButton}
+
+            </div>
+
+            `
+            :
+            ""
+          }
+
+
+        </div>
+
+        `;
+
+      })
+      .join("");
 
 }
 
 
-await loadOrders();
-
-
-if(orders.length === 0){
-
-box.innerHTML = `
-
-<div class="card empty">
-
-<h3>
-No orders yet
-</h3>
-
-<button
-class="primary-btn"
-onclick="showPage('shop')">
-
-SHOP NOW
-
-</button>
-
-</div>
-
-`;
-
-return;
-
-}
-
-
-box.innerHTML =
-orders
-.map(order => {
-
-const productText =
-getOrderProducts(order);
-
-
-let statusClass =
-"status";
-
-
-if(order.status === "Delivered"){
-
-statusClass =
-"status status-delivered";
-
-}
-
-else if(order.status === "Cancelled"){
-
-statusClass =
-"status status-cancelled";
-
-}
-
-else if(order.status === "Pending"){
-
-statusClass =
-"status status-pending";
-
-}
-
-
-let cancelButton = "";
-
-
-if(
-order.status !== "Delivered" &&
-order.status !== "Cancelled"
-){
-
-cancelButton = `
-
-<button
-class="cancel-btn"
-onclick="openCustomerCancelModal('${escapeHtml(order.order_id)}')">
-
-CANCEL ORDER
-
-</button>
-
-`;
-
-}
-
-
-const orderDate =
-order.created_at
-?
-new Date(order.created_at).toLocaleString()
-:
-"";
-
-
-return `
-
-<div class="order-card">
-
-
-<div class="order-top">
-
-<div>
-
-<strong>
-${escapeHtml(order.order_id)}
-</strong>
-
-<div
-style="color:#777;font-size:13px;margin-top:5px">
-
-${escapeHtml(orderDate)}
-
-</div>
-
-</div>
-
-
-<span class="${statusClass}">
-
-${escapeHtml(order.status)}
-
-</span>
-
-</div>
-
-
-<div class="order-products">
-
-${productText}
-
-</div>
-
-
-<div>
-
-<strong>
-Grand Total: Rs ${Number(order.grand_total)}
-</strong>
-
-</div>
-
-
-<div
-style="margin-top:8px;color:#666">
-
-Payment:
-${escapeHtml(order.payment_method)}
-
-</div>
-
-
-${
-order.cancellation_reason
-?
-`
-
-<div
-style="margin-top:10px;color:#b00000">
-
-<strong>
-Cancellation Reason:
-</strong>
-
-${escapeHtml(order.cancellation_reason)}
-
-<br>
-
-<strong>
-Cancelled By:
-</strong>
-
-${escapeHtml(order.cancelled_by || "")}
-
-</div>
-
-`
-:
-""
-}
-
-
-${
-cancelButton
-?
-`
-
-<div style="margin-top:14px">
-
-${cancelButton}
-
-</div>
-
-`
-:
-""
-}
-
-
-</div>
-
-`;
-
-})
-.join("");
-
-}
-
-
-/* ================================
+/* =========================================================
    CUSTOMER CANCEL MODAL
-================================ */
+========================================================= */
 
 function openCustomerCancelModal(orderId){
 
-cancelOrderId =
-orderId;
+  cancelOrderId =
+    orderId;
 
-cancelMode =
-"customer";
-
-
-document.getElementById(
-"cancelReasonSelect"
-).value = "";
+  cancelMode =
+    "customer";
 
 
-document.getElementById(
-"cancelReasonDetails"
-).value = "";
+  const reason =
+    document.getElementById(
+      "cancelReasonSelect"
+    );
+
+  const details =
+    document.getElementById(
+      "cancelReasonDetails"
+    );
+
+  const text =
+    document.getElementById(
+      "cancelModalText"
+    );
+
+  const modal =
+    document.getElementById(
+      "cancelModal"
+    );
 
 
-document.getElementById(
-"cancelModalText"
-).textContent =
-"Please select a reason for cancelling your order.";
+  if(reason) reason.value = "";
 
+  if(details) details.value = "";
 
-document.getElementById(
-"cancelModal"
-).classList.add("show");
+  if(text){
+
+    text.textContent =
+      "Please select a reason for cancelling your order.";
+
+  }
+
+  if(modal){
+
+    modal.classList.add("show");
+
+  }
 
 }
 
 
-/* ================================
+/* =========================================================
    ADMIN CANCEL MODAL
-================================ */
+========================================================= */
 
 function openAdminCancelModal(orderId){
 
-cancelOrderId =
-orderId;
+  cancelOrderId =
+    orderId;
 
-cancelMode =
-"admin";
-
-
-document.getElementById(
-"cancelReasonSelect"
-).value = "";
+  cancelMode =
+    "admin";
 
 
-document.getElementById(
-"cancelReasonDetails"
-).value = "";
+  const reason =
+    document.getElementById(
+      "cancelReasonSelect"
+    );
+
+  const details =
+    document.getElementById(
+      "cancelReasonDetails"
+    );
+
+  const text =
+    document.getElementById(
+      "cancelModalText"
+    );
+
+  const modal =
+    document.getElementById(
+      "cancelModal"
+    );
 
 
-document.getElementById(
-"cancelModalText"
-).textContent =
-"Please select the reason for cancelling this order as Admin.";
+  if(reason) reason.value = "";
 
+  if(details) details.value = "";
 
-document.getElementById(
-"cancelModal"
-).classList.add("show");
+  if(text){
+
+    text.textContent =
+      "Please select the reason for cancelling this order as Admin.";
+
+  }
+
+  if(modal){
+
+    modal.classList.add("show");
+
+  }
 
 }
 
 
-/* ================================
-   CLOSE MODAL
-================================ */
+/* =========================================================
+   CLOSE CANCEL MODAL
+========================================================= */
 
 function closeCancelModal(){
 
-cancelOrderId = null;
+  cancelOrderId =
+    null;
 
-cancelMode = "";
+  cancelMode =
+    "";
 
-document.getElementById(
-"cancelModal"
-).classList.remove("show");
+
+  const modal =
+    document.getElementById(
+      "cancelModal"
+    );
+
+
+  if(modal){
+
+    modal.classList.remove("show");
+
+  }
 
 }
 
 
-/* ================================
+/* =========================================================
    CONFIRM CANCELLATION
-================================ */
+========================================================= */
 
 async function confirmCancellation(){
 
-const selectedReason =
-document.getElementById(
-"cancelReasonSelect"
-).value;
-
-const details =
-document.getElementById(
-"cancelReasonDetails"
-).value.trim();
+  if(!requireSupabase()) return;
 
 
-if(!selectedReason){
+  if(!cancelOrderId){
 
-alert(
-"Please select a cancellation reason."
-);
+    alert(
+      "No order selected."
+    );
 
-return;
+    return;
+
+  }
+
+
+  const reasonElement =
+    document.getElementById(
+      "cancelReasonSelect"
+    );
+
+  const detailsElement =
+    document.getElementById(
+      "cancelReasonDetails"
+    );
+
+
+  if(!reasonElement || !detailsElement){
+
+    alert(
+      "Cancellation form is not ready."
+    );
+
+    return;
+
+  }
+
+
+  const selectedReason =
+    reasonElement.value;
+
+
+  const details =
+    detailsElement.value.trim();
+
+
+  if(!selectedReason){
+
+    alert(
+      "Please select a cancellation reason."
+    );
+
+    return;
+
+  }
+
+
+  if(
+    selectedReason === "Other" &&
+    !details
+  ){
+
+    alert(
+      "Please enter the cancellation reason in Additional Details."
+    );
+
+    return;
+
+  }
+
+
+  let finalReason =
+    selectedReason;
+
+
+  if(details){
+
+    finalReason +=
+      " - " +
+      details;
+
+  }
+
+
+  /* CUSTOMER */
+
+  if(cancelMode === "customer"){
+
+    try{
+
+      const result =
+        await supabaseClient.rpc(
+          "cancel_zelvo_order",
+          {
+            p_order_id:
+              cancelOrderId,
+
+            p_reason:
+              finalReason
+          }
+        );
+
+
+      if(result.error){
+
+        throw result.error;
+
+      }
+
+
+      closeCancelModal();
+
+
+      await renderOrders();
+
+
+      alert(
+        "Order cancelled successfully."
+      );
+
+
+    }catch(error){
+
+      console.error(error);
+
+
+      alert(
+        "Order could not be cancelled.\n\n" +
+        (error.message || "Unknown error")
+      );
+
+    }
+
+
+    return;
+
+  }
+
+
+  /* ADMIN */
+
+  if(cancelMode === "admin"){
+
+    if(!adminLogged){
+
+      alert(
+        "Admin login required."
+      );
+
+      closeCancelModal();
+
+      return;
+
+    }
+
+
+    try{
+
+      const result =
+        await supabaseClient
+          .from("zelvo_orders")
+          .update({
+
+            status:"Cancelled",
+
+            cancellation_reason:
+              finalReason,
+
+            cancelled_by:
+              "Admin"
+
+          })
+          .eq(
+            "order_id",
+            cancelOrderId
+          );
+
+
+      if(result.error){
+
+        throw result.error;
+
+      }
+
+
+      closeCancelModal();
+
+
+      await renderAdmin();
+
+
+      alert(
+        "Order cancelled successfully by Admin."
+      );
+
+
+    }catch(error){
+
+      console.error(error);
+
+
+      alert(
+        "Order could not be cancelled.\n\n" +
+        (error.message || "Unknown error")
+      );
+
+    }
+
+  }
 
 }
 
 
-if(
-selectedReason === "Other" &&
-!details
-){
-
-alert(
-"Please enter the cancellation reason in Additional Details."
-);
-
-return;
-
-}
-
-
-let finalReason =
-selectedReason;
-
-
-if(details){
-
-finalReason +=
-" - " + details;
-
-}
-
-
-/* CUSTOMER */
-
-if(cancelMode === "customer"){
-
-try{
-
-const {
-error
-} =
-await supabaseClient.rpc(
-"cancel_zelvo_order",
-{
-p_order_id:cancelOrderId,
-p_reason:finalReason
-}
-);
-
-
-if(error){
-
-throw error;
-
-}
-
-
-closeCancelModal();
-
-await renderOrders();
-
-alert(
-"Order cancelled successfully."
-);
-
-}catch(error){
-
-console.error(error);
-
-alert(
-"Order could not be cancelled.\n\n" +
-error.message
-);
-
-}
-
-return;
-
-}
-
-
-/* ADMIN */
-
-if(cancelMode === "admin"){
-
-try{
-
-const {
-error
-} =
-await supabaseClient
-.from("zelvo_orders")
-.update({
-
-status:"Cancelled",
-
-cancellation_reason:finalReason,
-
-cancelled_by:"Admin"
-
-})
-.eq(
-"order_id",
-cancelOrderId
-);
-
-
-if(error){
-
-throw error;
-
-}
-
-
-closeCancelModal();
-
-await renderAdmin();
-
-alert(
-"Order cancelled successfully by Admin."
-);
-
-}catch(error){
-
-console.error(error);
-
-alert(
-"Order could not be cancelled.\n\n" +
-error.message
-);
-
-}
-
-}
-
-}
-
-
-/* ================================
+/* =========================================================
    TRACK ORDER
-================================ */
+========================================================= */
 
 async function trackOrder(){
 
-if(!currentUser){
+  if(!requireSupabase()) return;
 
-alert(
-"Please login to track your order."
-);
 
-showPage("account");
+  if(!currentUser){
 
-return;
+    alert(
+      "Please login to track your order."
+    );
+
+    showPage("account");
+
+    return;
+
+  }
+
+
+  const input =
+    document.getElementById(
+      "trackOrderId"
+    );
+
+  const resultBox =
+    document.getElementById(
+      "trackResult"
+    );
+
+
+  if(!input || !resultBox){
+
+    return;
+
+  }
+
+
+  const id =
+    input.value
+      .trim();
+
+
+  if(!id){
+
+    alert(
+      "Enter your Order ID."
+    );
+
+    return;
+
+  }
+
+
+  resultBox.innerHTML = `
+
+  <div class="notice">
+
+  Checking order...
+
+  </div>
+
+  `;
+
+
+  const result =
+    await supabaseClient
+      .from("zelvo_orders")
+      .select("*")
+      .eq("order_id",id)
+      .eq("user_id",currentUser.id)
+      .maybeSingle();
+
+
+  const order =
+    result.data;
+
+  const error =
+    result.error;
+
+
+  if(error){
+
+    resultBox.innerHTML = `
+
+    <div class="danger">
+
+    ${escapeHtml(error.message)}
+
+    </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  if(!order){
+
+    resultBox.innerHTML = `
+
+    <div class="danger">
+
+    Order not found.
+
+    </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  resultBox.innerHTML = `
+
+  <div class="success">
+
+    <strong>
+    Order ID:
+    </strong>
+
+    ${escapeHtml(order.order_id)}
+
+    <br><br>
+
+    <strong>
+    Status:
+    </strong>
+
+    ${escapeHtml(order.status)}
+
+    <br><br>
+
+    <strong>
+    Total:
+    </strong>
+
+    Rs ${Number(order.grand_total)}
+
+
+    ${
+      order.cancellation_reason
+      ?
+
+      `
+
+      <br><br>
+
+      <strong>
+      Cancellation Reason:
+      </strong>
+
+      ${escapeHtml(
+        order.cancellation_reason
+      )}
+
+      <br><br>
+
+      <strong>
+      Cancelled By:
+      </strong>
+
+      ${escapeHtml(
+        order.cancelled_by || ""
+      )}
+
+      `
+
+      :
+
+      ""
+
+    }
+
+  </div>
+
+  `;
 
 }
 
 
-const id =
-document.getElementById(
-"trackOrderId"
-).value.trim();
-
-
-if(!id){
-
-alert(
-"Enter your Order ID."
-);
-
-return;
-
-}
-
-
-const {
-data:order,
-error
-} =
-await supabaseClient
-.from("zelvo_orders")
-.select("*")
-.eq("order_id",id)
-.eq("user_id",currentUser.id)
-.maybeSingle();
-
-
-const result =
-document.getElementById(
-"trackResult"
-);
-
-
-if(error){
-
-result.innerHTML = `
-
-<div class="danger">
-
-${escapeHtml(error.message)}
-
-</div>
-
-`;
-
-return;
-
-}
-
-
-if(!order){
-
-result.innerHTML = `
-
-<div class="danger">
-
-Order not found.
-
-</div>
-
-`;
-
-return;
-
-}
-
-
-result.innerHTML = `
-
-<div class="success">
-
-<strong>
-Order ID:
-</strong>
-
-${escapeHtml(order.order_id)}
-
-<br><br>
-
-<strong>
-Status:
-</strong>
-
-${escapeHtml(order.status)}
-
-<br><br>
-
-<strong>
-Total:
-</strong>
-
-Rs ${Number(order.grand_total)}
-
-
-${
-order.cancellation_reason
-?
-
-`
-
-<br><br>
-
-<strong>
-Cancellation Reason:
-</strong>
-
-${escapeHtml(order.cancellation_reason)}
-
-<br><br>
-
-<strong>
-Cancelled By:
-</strong>
-
-${escapeHtml(order.cancelled_by || "")}
-
-`
-
-:
-""
-}
-
-
-</div>
-
-`;
-
-}
-
-
-/* ================================
+/* =========================================================
    ADMIN LOGIN
-================================ */
+========================================================= */
 
 async function adminLogin(){
 
-const name =
-prompt(
-"Enter Admin Name:"
-);
+  if(!requireSupabase()){
+
+    showPage("home");
+
+    return;
+
+  }
 
 
-if(name === null){
+  const name =
+    prompt(
+      "Enter Admin Name:"
+    );
 
-showPage("home");
 
-return;
+  if(name === null){
+
+    showPage("home");
+
+    return;
+
+  }
+
+
+  if(
+    name.trim() !==
+    "Muhammad Umar"
+  ){
+
+    alert(
+      "Invalid admin name."
+    );
+
+    showPage("home");
+
+    return;
+
+  }
+
+
+  const password =
+    prompt(
+      "Enter Admin Password:"
+    );
+
+
+  if(password === null){
+
+    showPage("home");
+
+    return;
+
+  }
+
+
+  const result =
+    await supabaseClient.auth
+      .signInWithPassword({
+
+        email:
+          "zaid.xyz.786.86@gmail.com",
+
+        password:
+          password
+
+      });
+
+
+  const data =
+    result.data;
+
+  const error =
+    result.error;
+
+
+  if(error){
+
+    alert(
+      "Invalid admin password."
+    );
+
+    showPage("home");
+
+    return;
+
+  }
+
+
+  currentUser =
+    data.user;
+
+
+  const isAdmin =
+    await checkAdminStatus();
+
+
+  if(!isAdmin){
+
+    await supabaseClient.auth.signOut();
+
+    currentUser = null;
+
+    adminLogged = false;
+
+    updateAdminButton();
+
+
+    alert(
+      "This account is not authorized as Admin."
+    );
+
+    showPage("home");
+
+    return;
+
+  }
+
+
+  adminLogged =
+    true;
+
+
+  updateAdminButton();
+
+
+  showPage("admin");
+
+
+  await renderAdmin();
 
 }
 
 
-if(name.trim() !== "Muhammad Umar"){
-
-alert(
-"Invalid admin name."
-);
-
-showPage("home");
-
-return;
-
-}
-
-
-const password =
-prompt(
-"Enter Admin Password:"
-);
-
-
-if(password === null){
-
-showPage("home");
-
-return;
-
-}
-
-
-const {
-data,
-error
-} =
-await supabaseClient.auth.signInWithPassword({
-
-email:"zaid.xyz.786.86@gmail.com",
-
-password:password
-
-});
-
-
-if(error){
-
-alert(
-"Invalid admin password."
-);
-
-showPage("home");
-
-return;
-
-}
-
-
-currentUser =
-data.user;
-
-
-const isAdmin =
-await checkAdminStatus();
-
-
-if(!isAdmin){
-
-await supabaseClient.auth.signOut();
-
-currentUser = null;
-
-alert(
-"This account is not authorized as Admin."
-);
-
-showPage("home");
-
-return;
-
-}
-
-
-adminLogged = true;
-
-updateAdminButton();
-
-await renderAdmin();
-
-}
-
-
-/* ================================
+/* =========================================================
    CHECK ADMIN STATUS
-================================ */
+========================================================= */
 
 async function checkAdminStatus(){
 
-if(!currentUser){
+  if(!supabaseReady){
 
-adminLogged = false;
+    adminLogged =
+      false;
 
-updateAdminButton();
+    updateAdminButton();
 
-return false;
+    return false;
+
+  }
+
+
+  if(!currentUser){
+
+    adminLogged =
+      false;
+
+    updateAdminButton();
+
+    return false;
+
+  }
+
+
+  try{
+
+    const result =
+      await supabaseClient.rpc(
+        "is_admin"
+      );
+
+
+    if(result.error){
+
+      console.error(
+        "ADMIN CHECK ERROR:",
+        result.error
+      );
+
+
+      adminLogged =
+        false;
+
+      updateAdminButton();
+
+      return false;
+
+    }
+
+
+    adminLogged =
+      result.data === true;
+
+
+    updateAdminButton();
+
+
+    return adminLogged;
+
+  }catch(error){
+
+    console.error(error);
+
+
+    adminLogged =
+      false;
+
+    updateAdminButton();
+
+
+    return false;
+
+  }
 
 }
 
 
-const {
-data,
-error
-} =
-await supabaseClient.rpc(
-"is_admin"
-);
-
-
-if(error){
-
-console.error(error);
-
-adminLogged = false;
-
-updateAdminButton();
-
-return false;
-
-}
-
-
-adminLogged =
-data === true;
-
-updateAdminButton();
-
-return adminLogged;
-
-}
-
-
-/* ================================
+/* =========================================================
    ADMIN BUTTON
-================================ */
+========================================================= */
 
 function updateAdminButton(){
 
-const button =
-document.getElementById(
-"adminNav"
-);
-
-if(!button) return;
+  const button =
+    document.getElementById(
+      "adminNav"
+    );
 
 
-button.style.display =
-adminLogged
-?
-"block"
-:
-"none";
+  if(!button) return;
+
+
+  button.style.display =
+    adminLogged
+    ?
+    "block"
+    :
+    "none";
 
 }
 
 
-/* ================================
+/* =========================================================
    ADMIN DASHBOARD
-================================ */
+========================================================= */
 
 async function renderAdmin(){
 
-const box =
-document.getElementById(
-"adminContent"
-);
-
-if(!box) return;
+  const box =
+    document.getElementById(
+      "adminContent"
+    );
 
 
-if(!adminLogged){
+  if(!box) return;
 
-adminLogin();
 
-return;
+  if(!adminLogged){
+
+    box.innerHTML = `
+
+    <div class="card">
+
+      <div class="notice">
+
+      Admin login required.
+
+      </div>
+
+    </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  box.innerHTML = `
+
+  <div class="card">
+
+  Loading orders...
+
+  </div>
+
+  `;
+
+
+  const result =
+    await supabaseClient
+      .from("zelvo_orders")
+      .select("*")
+      .order(
+        "created_at",
+        {
+          ascending:false
+        }
+      );
+
+
+  const data =
+    result.data;
+
+  const error =
+    result.error;
+
+
+  if(error){
+
+    box.innerHTML = `
+
+    <div class="danger">
+
+    Could not load orders.
+
+    <br><br>
+
+    ${escapeHtml(error.message)}
+
+    </div>
+
+    `;
+
+    return;
+
+  }
+
+
+  orders =
+    data || [];
+
+
+  box.innerHTML = `
+
+  <div class="admin-header">
+
+    <h2>
+    Admin Dashboard
+    </h2>
+
+    <p>
+    Welcome, Muhammad Umar
+    </p>
+
+  </div>
+
+
+  <div class="card">
+
+    <button
+    type="button"
+    class="remove-btn"
+    onclick="adminLogout()">
+
+    ADMIN LOGOUT
+
+    </button>
+
+  </div>
+
+
+  ${
+    orders.length === 0
+    ?
+
+    `
+
+    <div class="card empty">
+
+      <h3>
+      No orders found.
+      </h3>
+
+      <p>
+      New orders will appear here.
+      </p>
+
+    </div>
+
+    `
+
+    :
+
+    orders
+      .map(function(order){
+
+        const productText =
+          getOrderProducts(order);
+
+
+        const orderDate =
+          order.created_at
+          ?
+          new Date(
+            order.created_at
+          ).toLocaleString()
+          :
+          "";
+
+
+        return `
+
+        <div class="admin-order">
+
+
+          <div class="order-top">
+
+            <div>
+
+              <strong>
+              ${escapeHtml(order.order_id)}
+              </strong>
+
+              <div
+              style="color:#777;font-size:13px;margin-top:5px">
+
+              ${escapeHtml(orderDate)}
+
+              </div>
+
+            </div>
+
+
+            <strong>
+            Rs ${Number(order.grand_total)}
+            </strong>
+
+          </div>
+
+
+          <hr>
+
+
+          <p>
+
+            <strong>
+            Customer:
+            </strong>
+
+            ${escapeHtml(order.customer_name)}
+
+          </p>
+
+
+          <p>
+
+            <strong>
+            Mobile:
+            </strong>
+
+            ${escapeHtml(order.mobile)}
+
+          </p>
+
+
+          <p>
+
+            <strong>
+            Email:
+            </strong>
+
+            ${escapeHtml(order.email)}
+
+          </p>
+
+
+          <p>
+
+            <strong>
+            Address:
+            </strong>
+
+            ${escapeHtml(order.address)}
+
+          </p>
+
+
+          <p>
+
+            <strong>
+            City:
+            </strong>
+
+            ${escapeHtml(order.city)}
+
+          </p>
+
+
+          <p>
+
+            <strong>
+            Province:
+            </strong>
+
+            ${escapeHtml(order.province)}
+
+          </p>
+
+
+          <p>
+
+            <strong>
+            Products:
+            </strong>
+
+            <br>
+
+            ${productText}
+
+          </p>
+
+
+          <p>
+
+            <strong>
+            Payment:
+            </strong>
+
+            ${escapeHtml(order.payment_method)}
+
+          </p>
+
+
+          ${
+            order.payment_screenshot
+            ?
+
+            `
+
+            <p>
+
+              <strong>
+              Payment Screenshot:
+              </strong>
+
+              <br>
+
+              <button
+              type="button"
+              class="primary-btn"
+              onclick="viewPaymentScreenshot('${escapeHtml(order.payment_screenshot)}')">
+
+              VIEW PAYMENT SCREENSHOT
+
+              </button>
+
+            </p>
+
+            `
+
+            :
+
+            ""
+
+          }
+
+
+          ${
+            order.cancellation_reason
+            ?
+
+            `
+
+            <div class="danger">
+
+              <strong>
+              Cancellation Reason:
+              </strong>
+
+              ${escapeHtml(
+                order.cancellation_reason
+              )}
+
+              <br>
+
+              <strong>
+              Cancelled By:
+              </strong>
+
+              ${escapeHtml(
+                order.cancelled_by || ""
+              )}
+
+            </div>
+
+            `
+
+            :
+
+            ""
+
+          }
+
+
+          <div class="admin-actions">
+
+
+            <select
+            onchange="changeOrderStatus('${escapeHtml(order.order_id)}',this.value)">
+
+            ${getStatusOptions(order.status)}
+
+            </select>
+
+
+            ${
+              order.status !== "Delivered" &&
+              order.status !== "Cancelled"
+
+              ?
+
+              `
+
+              <button
+              type="button"
+              class="cancel-btn"
+              onclick="openAdminCancelModal('${escapeHtml(order.order_id)}')">
+
+              CANCEL ORDER
+
+              </button>
+
+              `
+
+              :
+
+              ""
+
+            }
+
+
+          </div>
+
+
+        </div>
+
+        `;
+
+      })
+      .join("")
+
+  }
+
+  `;
 
 }
 
 
-const {
-data,
-error
-} =
-await supabaseClient
-.from("zelvo_orders")
-.select("*")
-.order("created_at",{ascending:false});
-
-
-if(error){
-
-box.innerHTML = `
-
-<div class="danger">
-
-Could not load orders.
-
-<br><br>
-
-${escapeHtml(error.message)}
-
-</div>
-
-`;
-
-return;
-
-}
-
-
-orders =
-data || [];
-
-
-box.innerHTML = `
-
-<div class="admin-header">
-
-<h2>
-Admin Dashboard
-</h2>
-
-<p>
-Welcome, Muhammad Umar
-</p>
-
-</div>
-
-
-<div class="card">
-
-<button
-class="remove-btn"
-onclick="adminLogout()">
-
-ADMIN LOGOUT
-
-</button>
-
-</div>
-
-
-${
-orders.length === 0
-?
-
-`
-
-<div class="card empty">
-
-<h3>
-No orders found.
-</h3>
-
-<p>
-New orders will appear here.
-</p>
-
-</div>
-
-`
-
-:
-
-orders
-.map(order => {
-
-const productText =
-getOrderProducts(order);
-
-
-const orderDate =
-order.created_at
-?
-new Date(order.created_at).toLocaleString()
-:
-"";
-
-
-return `
-
-<div class="admin-order">
-
-
-<div class="order-top">
-
-<div>
-
-<strong>
-${escapeHtml(order.order_id)}
-</strong>
-
-<div
-style="color:#777;font-size:13px;margin-top:5px">
-
-${escapeHtml(orderDate)}
-
-</div>
-
-</div>
-
-
-<strong>
-Rs ${Number(order.grand_total)}
-</strong>
-
-</div>
-
-
-<hr>
-
-
-<p>
-
-<strong>
-Customer:
-</strong>
-
-${escapeHtml(order.customer_name)}
-
-</p>
-
-
-<p>
-
-<strong>
-Mobile:
-</strong>
-
-${escapeHtml(order.mobile)}
-
-</p>
-
-
-<p>
-
-<strong>
-Email:
-</strong>
-
-${escapeHtml(order.email)}
-
-</p>
-
-
-<p>
-
-<strong>
-Address:
-</strong>
-
-${escapeHtml(order.address)}
-
-</p>
-
-
-<p>
-
-<strong>
-City:
-</strong>
-
-${escapeHtml(order.city)}
-
-</p>
-
-
-<p>
-
-<strong>
-Province:
-</strong>
-
-${escapeHtml(order.province)}
-
-</p>
-
-
-<p>
-
-<strong>
-Products:
-</strong>
-
-<br>
-
-${productText}
-
-</p>
-
-
-<p>
-
-<strong>
-Payment:
-</strong>
-
-${escapeHtml(order.payment_method)}
-
-</p>
-
-
-${
-order.payment_screenshot
-?
-
-`
-
-<p>
-
-<strong>
-Payment Screenshot:
-</strong>
-
-<br>
-
-<button
-class="primary-btn"
-onclick="viewPaymentScreenshot('${escapeHtml(order.payment_screenshot)}')">
-
-VIEW PAYMENT SCREENSHOT
-
-</button>
-
-</p>
-
-`
-
-:
-""
-}
-
-
-${
-order.cancellation_reason
-?
-
-<div class="danger">
-
-<strong>
-Cancellation Reason:
-</strong>
-
-${escapeHtml(order.cancellation_reason)}
-
-<br>
-
-<strong>
-Cancelled By:
-</strong>
-
-${escapeHtml(order.cancelled_by || "")}
-
-</div>
-
-`
-
-:
-""
-}
-
-
-<div class="admin-actions">
-
-
-<select
-onchange="changeOrderStatus('${escapeHtml(order.order_id)}',this.value)">
-
-${getStatusOptions(order.status)}
-
-</select>
-
-
-${
-order.status !== "Delivered" &&
-order.status !== "Cancelled"
-?
-
-`
-
-<button
-class="cancel-btn"
-onclick="openAdminCancelModal('${escapeHtml(order.order_id)}')">
-
-CANCEL ORDER
-
-</button>
-
-`
-
-:
-""
-}
-
-
-</div>
-
-
-</div>
-
-`;
-
-})
-.join("")
-
-}
-
-`;
-
-}
-
-
-/* ================================
+/* =========================================================
    PAYMENT SCREENSHOT VIEW
-================================ */
+========================================================= */
 
 async function viewPaymentScreenshot(path){
 
-if(!path){
+  if(!requireSupabase()) return;
 
-alert(
-"Payment screenshot not available."
-);
 
-return;
+  if(!path){
+
+    alert(
+      "Payment screenshot not available."
+    );
+
+    return;
+
+  }
+
+
+  const result =
+    await supabaseClient.storage
+      .from("zelvo-payment-screenshots")
+      .createSignedUrl(
+        path,
+        300
+      );
+
+
+  const data =
+    result.data;
+
+  const error =
+    result.error;
+
+
+  if(error){
+
+    alert(
+      "Could not open payment screenshot.\n\n" +
+      error.message
+    );
+
+    return;
+
+  }
+
+
+  if(
+    !data ||
+    !data.signedUrl
+  ){
+
+    alert(
+      "Payment screenshot URL could not be created."
+    );
+
+    return;
+
+  }
+
+
+  window.open(
+    data.signedUrl,
+    "_blank"
+  );
 
 }
 
 
-const {
-data,
-error
-} =
-await supabaseClient.storage
-.from("zelvo-payment-screenshots")
-.createSignedUrl(
-path,
-300
-);
-
-
-if(error){
-
-alert(
-"Could not open payment screenshot.\n\n" +
-error.message
-);
-
-return;
-
-}
-
-
-window.open(
-data.signedUrl,
-"_blank"
-);
-
-}
-
-
-/* ================================
+/* =========================================================
    STATUS OPTIONS
-================================ */
+========================================================= */
 
 function getStatusOptions(current){
 
-const statuses = [
+  const statuses = [
 
-"Pending",
-"Confirmed",
-"Packed",
-"Shipped",
-"Delivered",
-"Cancelled"
+    "Pending",
+    "Confirmed",
+    "Packed",
+    "Shipped",
+    "Delivered",
+    "Cancelled"
 
-];
+  ];
 
 
-return statuses
-.map(status => `
+  return statuses
+    .map(function(status){
 
-<option
-value="${status}"
-${current === status ? "selected" : ""}>
+      return `
 
-${status}
+      <option
+      value="${status}"
+      ${current === status ? "selected" : ""}>
 
-</option>
+      ${status}
 
-`)
-.join("");
+      </option>
+
+      `;
+
+    })
+    .join("");
 
 }
 
 
-/* ================================
+/* =========================================================
    ADMIN CHANGE STATUS
-================================ */
+========================================================= */
 
 async function changeOrderStatus(
-orderId,
-newStatus
+  orderId,
+  newStatus
 ){
 
-if(!adminLogged){
+  if(!requireSupabase()) return;
 
-alert(
-"Admin login required."
-);
 
-return;
+  if(!adminLogged){
+
+    alert(
+      "Admin login required."
+    );
+
+    return;
+
+  }
+
+
+  const updateData = {
+
+    status:newStatus
+
+  };
+
+
+  if(newStatus === "Cancelled"){
+
+    updateData.cancellation_reason =
+      "Cancelled by Admin";
+
+    updateData.cancelled_by =
+      "Admin";
+
+  }else{
+
+    updateData.cancellation_reason =
+      null;
+
+    updateData.cancelled_by =
+      null;
+
+  }
+
+
+  const result =
+    await supabaseClient
+      .from("zelvo_orders")
+      .update(updateData)
+      .eq(
+        "order_id",
+        orderId
+      );
+
+
+  if(result.error){
+
+    alert(
+      "Could not update order status.\n\n" +
+      result.error.message
+    );
+
+    return;
+
+  }
+
+
+  await renderAdmin();
 
 }
 
 
-const updateData = {
-
-status:newStatus
-
-};
-
-
-if(newStatus !== "Cancelled"){
-
-updateData.cancellation_reason = null;
-
-updateData.cancelled_by = null;
-
-}
-
-
-const {
-error
-} =
-await supabaseClient
-.from("zelvo_orders")
-.update(updateData)
-.eq("order_id",orderId);
-
-
-if(error){
-
-alert(
-"Could not update order status.\n\n" +
-error.message
-);
-
-return;
-
-}
-
-
-await renderAdmin();
-
-}
-
-
-/* ================================
+/* =========================================================
    ADMIN LOGOUT
-================================ */
+========================================================= */
 
 async function adminLogout(){
 
-await supabaseClient.auth.signOut();
+  if(!requireSupabase()) return;
 
-currentUser = null;
 
-adminLogged = false;
+  const result =
+    await supabaseClient.auth.signOut();
 
-updateAdminButton();
 
-showPage("home");
+  if(result.error){
+
+    alert(
+      result.error.message
+    );
+
+    return;
+
+  }
+
+
+  currentUser = null;
+
+  adminLogged = false;
+
+  orders = [];
+
+  updateAdminButton();
+
+  showPage("home");
 
 }
 
 
-/* ================================
+/* =========================================================
    ESCAPE HTML
-================================ */
+========================================================= */
 
 function escapeHtml(value){
 
-return String(value ?? "")
+  return String(value ?? "")
 
-.replace(/&/g,"&amp;")
+    .replace(/&/g,"&amp;")
 
-.replace(/</g,"&lt;")
+    .replace(/</g,"&lt;")
 
-.replace(/>/g,"&gt;")
+    .replace(/>/g,"&gt;")
 
-.replace(/"/g,"&quot;")
+    .replace(/"/g,"&quot;")
 
-.replace(/'/g,"&#039;");
+    .replace(/'/g,"&#039;");
 
 }
 
 
-/* ================================
+/* =========================================================
    AUTH STATE
-================================ */
+========================================================= */
 
-supabaseClient.auth.onAuthStateChange(
-async function(event,session){
+function setupAuthListener(){
 
-currentUser =
-session
-?
-session.user
-:
-null;
+  if(!supabaseReady){
+
+    return;
+
+  }
 
 
-if(currentUser){
+  supabaseClient.auth.onAuthStateChange(
+    function(event,session){
 
-await checkAdminStatus();
+      currentUser =
+        session
+        ?
+        session.user
+        :
+        null;
+
+
+      if(!currentUser){
+
+        adminLogged =
+          false;
+
+        updateAdminButton();
+
+        return;
+
+      }
+
+
+      /*
+        Do not await Supabase calls inside this callback.
+        This prevents the auth callback from blocking itself.
+      */
+
+      setTimeout(
+        function(){
+
+          checkAdminStatus();
+
+        },
+        0
+      );
+
+    }
+  );
+
+}
+
+
+/* =========================================================
+   INITIAL LOAD
+========================================================= */
+
+async function initializeZelvo(){
+
+  /*
+    These functions must always run even if Supabase
+    has a temporary connection problem.
+  */
+
+  renderProducts(
+    "homeProducts"
+  );
+
+  renderProducts(
+    "shopProducts"
+  );
+
+  updateCartCount();
+
+  updateAdminButton();
+
+
+  if(!supabaseReady){
+
+    console.error(
+      "Supabase library was not loaded."
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    const result =
+      await supabaseClient.auth.getSession();
+
+
+    if(result.error){
+
+      console.error(
+        "SESSION ERROR:",
+        result.error
+      );
+
+      return;
+
+    }
+
+
+    const session =
+      result.data.session;
+
+
+    currentUser =
+      session
+      ?
+      session.user
+      :
+      null;
+
+
+    if(currentUser){
+
+      await checkAdminStatus();
+
+    }else{
+
+      adminLogged =
+        false;
+
+      updateAdminButton();
+
+    }
+
+
+    /*
+      Keep auth listener separate from initialization.
+    */
+
+    setupAuthListener();
+
+
+  }catch(error){
+
+    console.error(
+      "INITIALIZATION ERROR:",
+      error
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   START WEBSITE
+========================================================= */
+
+if(
+  document.readyState === "loading"
+){
+
+  document.addEventListener(
+    "DOMContentLoaded",
+    initializeZelvo
+  );
 
 }else{
 
-adminLogged = false;
-
-updateAdminButton();
+  initializeZelvo();
 
 }
-
-}
-);
-
-
-/* ================================
-   INITIAL LOAD
-================================ */
-
-document.addEventListener(
-"DOMContentLoaded",
-async function(){
-
-renderProducts(
-"homeProducts"
-);
-
-renderProducts(
-"shopProducts"
-);
-
-updateCartCount();
-
-await loadCurrentUser();
-
-if(currentUser){
-
-await checkAdminStatus();
-
-}
-
-}
-);
 
 </script>
 
 </body>
 </html>
+```
