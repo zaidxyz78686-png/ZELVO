@@ -9,6 +9,8 @@
 
 <title>ZELVO - Online Shopping</title>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
 
 *{
@@ -1166,7 +1168,7 @@ Privacy Policy
 
 <p>
 ZELVO respects your privacy. Information entered during account creation
-and checkout is stored in your browser for this website's functionality.
+and checkout is stored securely for this website's functionality.
 </p>
 
 <p>
@@ -1487,6 +1489,23 @@ Cancel Order
 <script>
 
 /* ================================
+   SUPABASE
+================================ */
+
+const SUPABASE_URL =
+"https://pkcwbiisexqclmfzwksz.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_o3hY4LNmzJDEQJ7vL8iTRQ_K0cnMHYB";
+
+const supabaseClient =
+window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+
+/* ================================
    PRODUCTS
 ================================ */
 
@@ -1520,7 +1539,7 @@ image:"https://raw.githubusercontent.com/zaidxyz78686-png/ZELVO/refs/heads/main/
 
 
 /* ================================
-   LOCAL STORAGE
+   LOCAL CART ONLY
 ================================ */
 
 let cart =
@@ -1528,22 +1547,11 @@ JSON.parse(
 localStorage.getItem("zelvo_cart") || "{}"
 );
 
-let users =
-JSON.parse(
-localStorage.getItem("zelvo_users") || "[]"
-);
+let currentUser = null;
 
-let orders =
-JSON.parse(
-localStorage.getItem("zelvo_orders") || "[]"
-);
+let adminLogged = false;
 
-let currentUser =
-localStorage.getItem("zelvo_currentUser") || "";
-
-let adminLogged =
-localStorage.getItem("zelvo_admin") === "true";
-
+let orders = [];
 
 let cancelOrderId = null;
 
@@ -1551,40 +1559,38 @@ let cancelMode = "";
 
 
 /* ================================
-   SAVE
+   SAVE CART
 ================================ */
 
-function saveAll(){
+function saveCart(){
 
 localStorage.setItem(
 "zelvo_cart",
 JSON.stringify(cart)
 );
 
-localStorage.setItem(
-"zelvo_users",
-JSON.stringify(users)
-);
-
-localStorage.setItem(
-"zelvo_orders",
-JSON.stringify(orders)
-);
-
-if(currentUser){
-
-localStorage.setItem(
-"zelvo_currentUser",
-currentUser
-);
-
-}else{
-
-localStorage.removeItem(
-"zelvo_currentUser"
-);
-
 }
+
+
+/* ================================
+   AUTH SESSION
+================================ */
+
+async function loadCurrentUser(){
+
+const {
+data
+} =
+await supabaseClient.auth.getSession();
+
+currentUser =
+data.session
+?
+data.session.user
+:
+null;
+
+updateAdminButton();
 
 }
 
@@ -1773,7 +1779,7 @@ function addToCart(id){
 cart[id] =
 (cart[id] || 0) + 1;
 
-saveAll();
+saveCart();
 
 updateCartCount();
 
@@ -1797,7 +1803,7 @@ delete cart[id];
 
 }
 
-saveAll();
+saveCart();
 
 updateCartCount();
 
@@ -1827,7 +1833,7 @@ function removeFromCart(id){
 
 delete cart[id];
 
-saveAll();
+saveCart();
 
 updateCartCount();
 
@@ -2128,7 +2134,7 @@ My Account
 You are logged in as
 
 <strong>
-${escapeHtml(currentUser)}
+${escapeHtml(currentUser.email)}
 </strong>.
 
 </div>
@@ -2326,7 +2332,7 @@ CREATE ACCOUNT
    REGISTER
 ================================ */
 
-function register(){
+async function register(){
 
 const email =
 document.getElementById(
@@ -2350,12 +2356,10 @@ return;
 }
 
 
-if(users.some(
-u => u.email === email
-)){
+if(password.length < 6){
 
 alert(
-"An account with this email already exists."
+"Password must be at least 6 characters."
 );
 
 return;
@@ -2363,20 +2367,50 @@ return;
 }
 
 
-users.push({
+const {
+data,
+error
+} =
+await supabaseClient.auth.signUp({
+
 email:email,
+
 password:password
+
 });
 
-currentUser = email;
 
-saveAll();
+if(error){
+
+alert(
+error.message
+);
+
+return;
+
+}
+
+
+if(data.session){
+
+currentUser =
+data.session.user;
 
 alert(
 "Account created successfully."
 );
 
 renderAccount();
+
+}else{
+
+alert(
+"Account created successfully. Please check your email to verify your account, then login."
+);
+
+showLoginForm();
+
+}
 
 }
 
@@ -2385,7 +2419,7 @@ renderAccount();
    LOGIN
 ================================ */
 
-function login(){
+async function login(){
 
 const email =
 document.getElementById(
@@ -2398,18 +2432,10 @@ document.getElementById(
 ).value;
 
 
-const user =
-users.find(
-u =>
-u.email === email &&
-u.password === password
-);
-
-
-if(!user){
+if(!email || !password){
 
 alert(
-"Invalid email or password."
+"Please fill all fields."
 );
 
 return;
@@ -2417,9 +2443,34 @@ return;
 }
 
 
-currentUser = email;
+const {
+data,
+error
+} =
+await supabaseClient.auth.signInWithPassword({
 
-saveAll();
+email:email,
+
+password:password
+
+});
+
+
+if(error){
+
+alert(
+error.message
+);
+
+return;
+
+}
+
+
+currentUser =
+data.user;
+
+await checkAdminStatus();
 
 alert(
 "Login successful."
@@ -2434,11 +2485,15 @@ renderAccount();
    LOGOUT
 ================================ */
 
-function logout(){
+async function logout(){
 
-currentUser = "";
+await supabaseClient.auth.signOut();
 
-saveAll();
+currentUser = null;
+
+adminLogged = false;
+
+updateAdminButton();
 
 renderAccount();
 
@@ -2575,7 +2630,7 @@ Email
 
 <input
 id="customerEmail"
-value="${escapeHtml(currentUser)}"
+value="${escapeHtml(currentUser.email)}"
 readonly>
 
 </div>
@@ -2796,10 +2851,70 @@ box.style.display =
 
 
 /* ================================
+   PAYMENT SCREENSHOT UPLOAD
+================================ */
+
+async function uploadPaymentScreenshot(
+file,
+orderId
+){
+
+if(!file) return null;
+
+
+if(file.size > 5 * 1024 * 1024){
+
+throw new Error(
+"Payment screenshot must be smaller than 5 MB."
+);
+
+}
+
+
+const extension =
+file.name.split(".").pop() || "jpg";
+
+
+const path =
+currentUser.id +
+"/" +
+orderId +
+"." +
+extension;
+
+
+const {
+error
+} =
+await supabaseClient.storage
+.from("zelvo-payment-screenshots")
+.upload(
+path,
+file,
+{
+upsert:true,
+contentType:file.type
+}
+);
+
+
+if(error){
+
+throw error;
+
+}
+
+
+return path;
+
+}
+
+
+/* ================================
    PLACE ORDER
 ================================ */
 
-function placeOrder(){
+async function placeOrder(){
 
 if(!currentUser){
 
@@ -2862,7 +2977,7 @@ return;
 }
 
 
-let screenshotName = "";
+let screenshotPath = null;
 
 
 if(
@@ -2890,10 +3005,6 @@ return;
 
 }
 
-
-screenshotName =
-fileInput.files[0].name;
-
 }
 
 
@@ -2902,36 +3013,55 @@ const orderId =
 Date.now().toString().slice(-8);
 
 
-const orderProducts =
-products
-.filter(
-p => cart[p.id] > 0
-)
-.map(p => ({
-
-id:p.id,
-name:p.name,
-price:p.price,
-qty:cart[p.id]
-
-}));
-
-
 const subtotal =
 cartSubtotal();
 
 
-const order = {
+let screenshotFile = null;
 
-id:orderId,
 
-date:new Date().toLocaleString(),
+if(
+method === "JazzCash" ||
+method === "EasyPaisa"
+){
 
-customerName:name,
+screenshotFile =
+document.getElementById(
+"paymentScreenshot"
+).files[0];
+
+}
+
+
+try{
+
+if(screenshotFile){
+
+screenshotPath =
+await uploadPaymentScreenshot(
+screenshotFile,
+orderId
+);
+
+}
+
+
+const {
+error
+} =
+await supabaseClient
+.from("zelvo_orders")
+.insert({
+
+order_id:orderId,
+
+user_id:currentUser.id,
+
+customer_name:name,
 
 mobile:mobile,
 
-email:currentUser,
+email:currentUser.email,
 
 address:address,
 
@@ -2939,32 +3069,41 @@ city:city,
 
 province:province,
 
-products:orderProducts,
+gluta_qty:cart.gluta || 0,
+
+multi_qty:cart.multi || 0,
+
+anti_age_qty:cart.antiAge || 0,
 
 subtotal:subtotal,
 
 delivery:0,
 
-total:subtotal,
+grand_total:subtotal,
 
-paymentMethod:method,
+payment_method:method,
 
-paymentScreenshot:screenshotName,
+payment_screenshot:screenshotPath,
 
 status:"Pending",
 
-cancellationReason:"",
+cancellation_reason:null,
 
-cancelledBy:""
+cancelled_by:null
 
-};
+});
 
 
-orders.push(order);
+if(error){
+
+throw error;
+
+}
+
 
 cart = {};
 
-saveAll();
+saveCart();
 
 updateCartCount();
 
@@ -2978,6 +3117,112 @@ orderId
 
 showPage("orders");
 
+await loadOrders();
+
+
+}catch(error){
+
+console.error(error);
+
+alert(
+"Order could not be placed.\n\n" +
+error.message
+);
+
+}
+
+}
+
+
+/* ================================
+   GET CUSTOMER ORDERS
+================================ */
+
+async function loadOrders(){
+
+if(!currentUser){
+
+orders = [];
+
+return;
+
+}
+
+
+const {
+data,
+error
+} =
+await supabaseClient
+.from("zelvo_orders")
+.select("*")
+.eq("user_id",currentUser.id)
+.order("created_at",{ascending:false});
+
+
+if(error){
+
+console.error(error);
+
+alert(
+"Could not load orders.\n\n" +
+error.message
+);
+
+return;
+
+}
+
+
+orders =
+data || [];
+
+}
+
+
+/* ================================
+   ORDER PRODUCTS TEXT
+================================ */
+
+function getOrderProducts(order){
+
+let list = [];
+
+
+if(Number(order.gluta_qty) > 0){
+
+list.push(
+"Gluta White Cream × " +
+Number(order.gluta_qty)
+);
+
+}
+
+
+if(Number(order.multi_qty) > 0){
+
+list.push(
+"Multi Vitamin Serum × " +
+Number(order.multi_qty)
+);
+
+}
+
+
+if(Number(order.anti_age_qty) > 0){
+
+list.push(
+"Fairness & Anti-Aging Serum × " +
+Number(order.anti_age_qty)
+);
+
+}
+
+
+return list
+.map(escapeHtml)
+.join("<br>");
+
 }
 
 
@@ -2985,7 +3230,7 @@ showPage("orders");
    MY ORDERS
 ================================ */
 
-function renderOrders(){
+async function renderOrders(){
 
 const box =
 document.getElementById(
@@ -3024,13 +3269,10 @@ return;
 }
 
 
-const myOrders =
-orders.filter(
-o => o.email === currentUser
-);
+await loadOrders();
 
 
-if(myOrders.length === 0){
+if(orders.length === 0){
 
 box.innerHTML = `
 
@@ -3058,21 +3300,15 @@ return;
 
 
 box.innerHTML =
-myOrders
-.slice()
-.reverse()
+orders
 .map(order => {
 
 const productText =
-order.products
-.map(
-p =>
-`${escapeHtml(p.name)} × ${p.qty}`
-)
-.join("<br>");
+getOrderProducts(order);
 
 
-let statusClass = "status";
+let statusClass =
+"status";
 
 
 if(order.status === "Delivered"){
@@ -3109,7 +3345,7 @@ cancelButton = `
 
 <button
 class="cancel-btn"
-onclick="openCustomerCancelModal('${order.id}')">
+onclick="openCustomerCancelModal('${escapeHtml(order.order_id)}')">
 
 CANCEL ORDER
 
@@ -3118,6 +3354,14 @@ CANCEL ORDER
 `;
 
 }
+
+
+const orderDate =
+order.created_at
+?
+new Date(order.created_at).toLocaleString()
+:
+"";
 
 
 return `
@@ -3130,13 +3374,13 @@ return `
 <div>
 
 <strong>
-${escapeHtml(order.id)}
+${escapeHtml(order.order_id)}
 </strong>
 
 <div
 style="color:#777;font-size:13px;margin-top:5px">
 
-${escapeHtml(order.date)}
+${escapeHtml(orderDate)}
 
 </div>
 
@@ -3162,7 +3406,7 @@ ${productText}
 <div>
 
 <strong>
-Grand Total: Rs ${order.total}
+Grand Total: Rs ${Number(order.grand_total)}
 </strong>
 
 </div>
@@ -3172,13 +3416,13 @@ Grand Total: Rs ${order.total}
 style="margin-top:8px;color:#666">
 
 Payment:
-${escapeHtml(order.paymentMethod)}
+${escapeHtml(order.payment_method)}
 
 </div>
 
 
 ${
-order.cancellationReason
+order.cancellation_reason
 ?
 `
 
@@ -3189,7 +3433,7 @@ style="margin-top:10px;color:#b00000">
 Cancellation Reason:
 </strong>
 
-${escapeHtml(order.cancellationReason)}
+${escapeHtml(order.cancellation_reason)}
 
 <br>
 
@@ -3197,7 +3441,7 @@ ${escapeHtml(order.cancellationReason)}
 Cancelled By:
 </strong>
 
-${escapeHtml(order.cancelledBy)}
+${escapeHtml(order.cancelled_by || "")}
 
 </div>
 
@@ -3235,7 +3479,7 @@ ${cancelButton}
 
 
 /* ================================
-   CUSTOMER CANCEL
+   CUSTOMER CANCEL MODAL
 ================================ */
 
 function openCustomerCancelModal(orderId){
@@ -3271,7 +3515,7 @@ document.getElementById(
 
 
 /* ================================
-   ADMIN CANCEL
+   ADMIN CANCEL MODAL
 ================================ */
 
 function openAdminCancelModal(orderId){
@@ -3327,7 +3571,7 @@ document.getElementById(
    CONFIRM CANCELLATION
 ================================ */
 
-function confirmCancellation(){
+async function confirmCancellation(){
 
 const selectedReason =
 document.getElementById(
@@ -3377,98 +3621,106 @@ finalReason +=
 }
 
 
-const order =
-orders.find(
-o => o.id === cancelOrderId
-);
-
-
-if(!order){
-
-alert(
-"Order not found."
-);
-
-closeCancelModal();
-
-return;
-
-}
-
-
 /* CUSTOMER */
 
 if(cancelMode === "customer"){
 
-if(order.email !== currentUser){
+try{
 
-alert(
-"You can only cancel your own order."
+const {
+error
+} =
+await supabaseClient.rpc(
+"cancel_zelvo_order",
+{
+p_order_id:cancelOrderId,
+p_reason:finalReason
+}
 );
 
+
+if(error){
+
+throw error;
+
+}
+
+
 closeCancelModal();
+
+await renderOrders();
+
+alert(
+"Order cancelled successfully."
+);
+
+}catch(error){
+
+console.error(error);
+
+alert(
+"Order could not be cancelled.\n\n" +
+error.message
+);
+
+}
 
 return;
 
 }
 
-}
 
-
-/* STATUS CHECK */
-
-if(
-order.status === "Delivered" ||
-order.status === "Cancelled"
-){
-
-alert(
-"This order cannot be cancelled."
-);
-
-closeCancelModal();
-
-return;
-
-}
-
-
-/* CANCEL */
-
-order.status =
-"Cancelled";
-
-order.cancellationReason =
-finalReason;
-
-order.cancelledBy =
-cancelMode === "admin"
-?
-"Admin"
-:
-"Customer";
-
-
-saveAll();
-
-closeCancelModal();
-
+/* ADMIN */
 
 if(cancelMode === "admin"){
 
-renderAdmin();
+try{
+
+const {
+error
+} =
+await supabaseClient
+.from("zelvo_orders")
+.update({
+
+status:"Cancelled",
+
+cancellation_reason:finalReason,
+
+cancelled_by:"Admin"
+
+})
+.eq(
+"order_id",
+cancelOrderId
+);
+
+
+if(error){
+
+throw error;
+
+}
+
+
+closeCancelModal();
+
+await renderAdmin();
 
 alert(
 "Order cancelled successfully by Admin."
 );
 
-}else{
+}catch(error){
 
-renderOrders();
+console.error(error);
 
 alert(
-"Order cancelled successfully."
+"Order could not be cancelled.\n\n" +
+error.message
 );
+
+}
 
 }
 
@@ -3479,7 +3731,7 @@ alert(
    TRACK ORDER
 ================================ */
 
-function trackOrder(){
+async function trackOrder(){
 
 if(!currentUser){
 
@@ -3511,19 +3763,39 @@ return;
 }
 
 
-const order =
-orders.find(
-o =>
-o.id.toLowerCase() ===
-id.toLowerCase() &&
-o.email === currentUser
-);
+const {
+data:order,
+error
+} =
+await supabaseClient
+.from("zelvo_orders")
+.select("*")
+.eq("order_id",id)
+.eq("user_id",currentUser.id)
+.maybeSingle();
 
 
 const result =
 document.getElementById(
 "trackResult"
 );
+
+
+if(error){
+
+result.innerHTML = `
+
+<div class="danger">
+
+${escapeHtml(error.message)}
+
+</div>
+
+`;
+
+return;
+
+}
 
 
 if(!order){
@@ -3551,7 +3823,7 @@ result.innerHTML = `
 Order ID:
 </strong>
 
-${escapeHtml(order.id)}
+${escapeHtml(order.order_id)}
 
 <br><br>
 
@@ -3567,11 +3839,11 @@ ${escapeHtml(order.status)}
 Total:
 </strong>
 
-Rs ${order.total}
+Rs ${Number(order.grand_total)}
 
 
 ${
-order.cancellationReason
+order.cancellation_reason
 ?
 
 `
@@ -3582,7 +3854,7 @@ order.cancellationReason
 Cancellation Reason:
 </strong>
 
-${escapeHtml(order.cancellationReason)}
+${escapeHtml(order.cancellation_reason)}
 
 <br><br>
 
@@ -3590,7 +3862,7 @@ ${escapeHtml(order.cancellationReason)}
 Cancelled By:
 </strong>
 
-${escapeHtml(order.cancelledBy)}
+${escapeHtml(order.cancelled_by || "")}
 
 `
 
@@ -3610,7 +3882,7 @@ ${escapeHtml(order.cancelledBy)}
    ADMIN LOGIN
 ================================ */
 
-function adminLogin(){
+async function adminLogin(){
 
 const name =
 prompt(
@@ -3619,6 +3891,19 @@ prompt(
 
 
 if(name === null){
+
+showPage("home");
+
+return;
+
+}
+
+
+if(name.trim() !== "Muhammad Umar"){
+
+alert(
+"Invalid admin name."
+);
 
 showPage("home");
 
@@ -3642,42 +3927,135 @@ return;
 }
 
 
-/*
-  CURRENT ADMIN CREDENTIALS
-*/
+const {
+data,
+error
+} =
+await supabaseClient.auth.signInWithPassword({
 
-if(
-name.trim() === "Muhammad Umar" &&
-password === "M.Umar.xyz.786"
-){
+email:"zaid.xyz.786.86@gmail.com",
 
-adminLogged = true;
+password:password
 
-
-localStorage.setItem(
-"zelvo_admin",
-"true"
-);
+});
 
 
-document.getElementById(
-"adminNav"
-).style.display =
-"block";
-
-
-renderAdmin();
-
-
-}else{
+if(error){
 
 alert(
-"Invalid admin credentials."
+"Invalid admin password."
 );
 
 showPage("home");
 
+return;
+
 }
+
+
+currentUser =
+data.user;
+
+
+const isAdmin =
+await checkAdminStatus();
+
+
+if(!isAdmin){
+
+await supabaseClient.auth.signOut();
+
+currentUser = null;
+
+alert(
+"This account is not authorized as Admin."
+);
+
+showPage("home");
+
+return;
+
+}
+
+
+adminLogged = true;
+
+updateAdminButton();
+
+await renderAdmin();
+
+}
+
+
+/* ================================
+   CHECK ADMIN STATUS
+================================ */
+
+async function checkAdminStatus(){
+
+if(!currentUser){
+
+adminLogged = false;
+
+updateAdminButton();
+
+return false;
+
+}
+
+
+const {
+data,
+error
+} =
+await supabaseClient.rpc(
+"is_admin"
+);
+
+
+if(error){
+
+console.error(error);
+
+adminLogged = false;
+
+updateAdminButton();
+
+return false;
+
+}
+
+
+adminLogged =
+data === true;
+
+updateAdminButton();
+
+return adminLogged;
+
+}
+
+
+/* ================================
+   ADMIN BUTTON
+================================ */
+
+function updateAdminButton(){
+
+const button =
+document.getElementById(
+"adminNav"
+);
+
+if(!button) return;
+
+
+button.style.display =
+adminLogged
+?
+"block"
+:
+"none";
 
 }
 
@@ -3686,7 +4064,7 @@ showPage("home");
    ADMIN DASHBOARD
 ================================ */
 
-function renderAdmin(){
+async function renderAdmin(){
 
 const box =
 document.getElementById(
@@ -3703,6 +4081,41 @@ adminLogin();
 return;
 
 }
+
+
+const {
+data,
+error
+} =
+await supabaseClient
+.from("zelvo_orders")
+.select("*")
+.order("created_at",{ascending:false});
+
+
+if(error){
+
+box.innerHTML = `
+
+<div class="danger">
+
+Could not load orders.
+
+<br><br>
+
+${escapeHtml(error.message)}
+
+</div>
+
+`;
+
+return;
+
+}
+
+
+orders =
+data || [];
 
 
 box.innerHTML = `
@@ -3746,7 +4159,7 @@ No orders found.
 </h3>
 
 <p>
-New orders will appear here on this browser.
+New orders will appear here.
 </p>
 
 </div>
@@ -3756,17 +4169,18 @@ New orders will appear here on this browser.
 :
 
 orders
-.slice()
-.reverse()
 .map(order => {
 
 const productText =
-order.products
-.map(
-p =>
-`${escapeHtml(p.name)} × ${p.qty}`
-)
-.join("<br>");
+getOrderProducts(order);
+
+
+const orderDate =
+order.created_at
+?
+new Date(order.created_at).toLocaleString()
+:
+"";
 
 
 return `
@@ -3779,13 +4193,13 @@ return `
 <div>
 
 <strong>
-${escapeHtml(order.id)}
+${escapeHtml(order.order_id)}
 </strong>
 
 <div
 style="color:#777;font-size:13px;margin-top:5px">
 
-${escapeHtml(order.date)}
+${escapeHtml(orderDate)}
 
 </div>
 
@@ -3793,7 +4207,7 @@ ${escapeHtml(order.date)}
 
 
 <strong>
-Rs ${order.total}
+Rs ${Number(order.grand_total)}
 </strong>
 
 </div>
@@ -3808,7 +4222,7 @@ Rs ${order.total}
 Customer:
 </strong>
 
-${escapeHtml(order.customerName)}
+${escapeHtml(order.customer_name)}
 
 </p>
 
@@ -3887,13 +4301,13 @@ ${productText}
 Payment:
 </strong>
 
-${escapeHtml(order.paymentMethod)}
+${escapeHtml(order.payment_method)}
 
 </p>
 
 
 ${
-order.paymentScreenshot
+order.payment_screenshot
 ?
 
 `
@@ -3901,10 +4315,18 @@ order.paymentScreenshot
 <p>
 
 <strong>
-Payment Screenshot File:
+Payment Screenshot:
 </strong>
 
-${escapeHtml(order.paymentScreenshot)}
+<br>
+
+<button
+class="primary-btn"
+onclick="viewPaymentScreenshot('${escapeHtml(order.payment_screenshot)}')">
+
+VIEW PAYMENT SCREENSHOT
+
+</button>
 
 </p>
 
@@ -3916,10 +4338,8 @@ ${escapeHtml(order.paymentScreenshot)}
 
 
 ${
-order.cancellationReason
+order.cancellation_reason
 ?
-
-`
 
 <div class="danger">
 
@@ -3927,7 +4347,7 @@ order.cancellationReason
 Cancellation Reason:
 </strong>
 
-${escapeHtml(order.cancellationReason)}
+${escapeHtml(order.cancellation_reason)}
 
 <br>
 
@@ -3935,7 +4355,7 @@ ${escapeHtml(order.cancellationReason)}
 Cancelled By:
 </strong>
 
-${escapeHtml(order.cancelledBy)}
+${escapeHtml(order.cancelled_by || "")}
 
 </div>
 
@@ -3950,7 +4370,7 @@ ${escapeHtml(order.cancelledBy)}
 
 
 <select
-onchange="changeOrderStatus('${order.id}',this.value)">
+onchange="changeOrderStatus('${escapeHtml(order.order_id)}',this.value)">
 
 ${getStatusOptions(order.status)}
 
@@ -3966,7 +4386,7 @@ order.status !== "Cancelled"
 
 <button
 class="cancel-btn"
-onclick="openAdminCancelModal('${order.id}')">
+onclick="openAdminCancelModal('${escapeHtml(order.order_id)}')">
 
 CANCEL ORDER
 
@@ -3992,6 +4412,55 @@ CANCEL ORDER
 }
 
 `;
+
+}
+
+
+/* ================================
+   PAYMENT SCREENSHOT VIEW
+================================ */
+
+async function viewPaymentScreenshot(path){
+
+if(!path){
+
+alert(
+"Payment screenshot not available."
+);
+
+return;
+
+}
+
+
+const {
+data,
+error
+} =
+await supabaseClient.storage
+.from("zelvo-payment-screenshots")
+.createSignedUrl(
+path,
+300
+);
+
+
+if(error){
+
+alert(
+"Could not open payment screenshot.\n\n" +
+error.message
+);
+
+return;
+
+}
+
+
+window.open(
+data.signedUrl,
+"_blank"
+);
 
 }
 
@@ -4035,38 +4504,60 @@ ${status}
    ADMIN CHANGE STATUS
 ================================ */
 
-function changeOrderStatus(
+async function changeOrderStatus(
 orderId,
 newStatus
 ){
 
-const order =
-orders.find(
-o => o.id === orderId
+if(!adminLogged){
+
+alert(
+"Admin login required."
 );
 
-
-if(!order) return;
-
-
-order.status =
-newStatus;
-
-
-if(newStatus !== "Cancelled"){
-
-order.cancellationReason =
-"";
-
-order.cancelledBy =
-"";
+return;
 
 }
 
 
-saveAll();
+const updateData = {
 
-renderAdmin();
+status:newStatus
+
+};
+
+
+if(newStatus !== "Cancelled"){
+
+updateData.cancellation_reason = null;
+
+updateData.cancelled_by = null;
+
+}
+
+
+const {
+error
+} =
+await supabaseClient
+.from("zelvo_orders")
+.update(updateData)
+.eq("order_id",orderId);
+
+
+if(error){
+
+alert(
+"Could not update order status.\n\n" +
+error.message
+);
+
+return;
+
+}
+
+
+await renderAdmin();
 
 }
 
@@ -4075,22 +4566,15 @@ renderAdmin();
    ADMIN LOGOUT
 ================================ */
 
-function adminLogout(){
+async function adminLogout(){
 
-adminLogged =
-false;
+await supabaseClient.auth.signOut();
 
+currentUser = null;
 
-localStorage.removeItem(
-"zelvo_admin"
-);
+adminLogged = false;
 
-
-document.getElementById(
-"adminNav"
-).style.display =
-"none";
-
+updateAdminButton();
 
 showPage("home");
 
@@ -4103,7 +4587,7 @@ showPage("home");
 
 function escapeHtml(value){
 
-return String(value)
+return String(value ?? "")
 
 .replace(/&/g,"&amp;")
 
@@ -4119,12 +4603,43 @@ return String(value)
 
 
 /* ================================
+   AUTH STATE
+================================ */
+
+supabaseClient.auth.onAuthStateChange(
+async function(event,session){
+
+currentUser =
+session
+?
+session.user
+:
+null;
+
+
+if(currentUser){
+
+await checkAdminStatus();
+
+}else{
+
+adminLogged = false;
+
+updateAdminButton();
+
+}
+
+}
+);
+
+
+/* ================================
    INITIAL LOAD
 ================================ */
 
 document.addEventListener(
 "DOMContentLoaded",
-function(){
+async function(){
 
 renderProducts(
 "homeProducts"
@@ -4136,13 +4651,11 @@ renderProducts(
 
 updateCartCount();
 
+await loadCurrentUser();
 
-if(adminLogged){
+if(currentUser){
 
-document.getElementById(
-"adminNav"
-).style.display =
-"block";
+await checkAdminStatus();
 
 }
 
