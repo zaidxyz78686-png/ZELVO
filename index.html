@@ -1458,7 +1458,6 @@ function addToCart(id){
   saveCart();
   renderProducts();
   renderCart();
-  alert("Product added to cart.");
 }
 
 function changeQty(id,amount){
@@ -1475,6 +1474,11 @@ function changeProductQty(id,amount){
   if(cart[id]<=0){
     delete cart[id];
   }
+
+  saveCart();
+  renderProducts();
+  renderCart();
+}
 
   saveCart();
 
