@@ -1454,11 +1454,17 @@ function updateCartCount(){
 
 
 function addToCart(id){
+
   cart[id]=(cart[id] || 0)+1;
+
   saveCart();
+
   renderProducts();
+
   renderCart();
+
 }
+
 
 function changeQty(id,amount){
 
@@ -1467,6 +1473,16 @@ function changeQty(id,amount){
   if(cart[id]<=0){
     delete cart[id];
   }
+
+  saveCart();
+
+  renderCart();
+
+  renderProducts();
+
+}
+
+
 function changeProductQty(id,amount){
 
   cart[id]=(cart[id] || 0)+amount;
@@ -1476,17 +1492,8 @@ function changeProductQty(id,amount){
   }
 
   saveCart();
-  renderProducts();
-  renderCart();
-}
-
-  saveCart();
 
   renderProducts();
-
-  renderCart();
-}
-  saveCart();
 
   renderCart();
 
