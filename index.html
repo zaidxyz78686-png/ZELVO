@@ -1054,7 +1054,282 @@ TRACK ORDER
 
 </section>
 
+<!-- WALLET -->
 
+<section id="wallet" class="page">
+
+<h2 class="section-title">💰 ZELVO Wallet</h2>
+
+<div id="walletLoginRequired" class="card">
+
+<h3>Login Required</h3>
+
+<p>
+Please login to use your ZELVO Wallet.
+</p>
+
+<button class="green-btn" onclick="showPage('account')">
+LOGIN / CREATE ACCOUNT
+</button>
+
+</div>
+
+
+<div id="walletArea" class="hidden">
+
+<!-- BALANCE -->
+
+<div class="card"
+style="background:#000;color:#fff;text-align:center">
+
+<p style="color:#aaa;margin-bottom:5px">
+AVAILABLE WALLET BALANCE
+</p>
+
+<h1 style="color:#16a05d;font-size:38px;margin:8px 0">
+Rs <span id="walletBalance">0</span>
+</h1>
+
+<button class="green-btn" onclick="loadWallet()">
+REFRESH BALANCE
+</button>
+
+</div>
+
+
+<!-- WALLET ACTIONS -->
+
+<div class="card">
+
+<h3>Wallet Actions</h3>
+
+<div style="
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:12px">
+
+<button
+class="green-btn"
+onclick="showWalletBox('deposit')">
+
+➕ ADD MONEY
+
+</button>
+
+<button
+class="black-btn"
+onclick="showWalletBox('withdraw')">
+
+💸 WITHDRAW
+
+</button>
+
+</div>
+
+</div>
+
+
+<!-- DEPOSIT -->
+
+<div id="walletDepositBox" class="card hidden">
+
+<h3>💰 Add Money</h3>
+
+<p>
+Send money to the ZELVO payment account and submit your
+payment screenshot. Your wallet will be credited after admin verification.
+</p>
+
+<p>
+<b>JazzCash / EasyPaisa:</b><br>
+03217819034
+</p>
+
+<div class="form-group">
+
+<label>Amount *</label>
+
+<input
+id="depositAmount"
+type="number"
+min="1"
+placeholder="Enter amount">
+
+</div>
+
+<div class="form-group">
+
+<label>Payment Method *</label>
+
+<select id="depositMethod">
+
+<option value="">Select Method</option>
+<option value="JazzCash">JazzCash</option>
+<option value="EasyPaisa">EasyPaisa</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>Payment Screenshot *</label>
+
+<input
+id="depositScreenshot"
+type="file"
+accept="image/*">
+
+<small>Maximum 5 MB</small>
+
+</div>
+
+<button
+class="green-btn"
+style="width:100%"
+onclick="submitWalletDeposit()">
+
+SUBMIT DEPOSIT
+
+</button>
+
+<div id="depositMessage" class="message"></div>
+
+</div>
+
+
+<!-- WITHDRAW -->
+
+<div id="walletWithdrawBox" class="card hidden">
+
+<h3>💸 Withdraw Wallet Money</h3>
+
+<p>
+Withdrawal has a <b>Rs.30 service fee</b> per request.
+</p>
+
+<div class="form-group">
+
+<label>Amount to Withdraw *</label>
+
+<input
+id="withdrawAmount"
+type="number"
+min="1"
+placeholder="Amount">
+
+</div>
+
+<div class="form-group">
+
+<label>Payment Method *</label>
+
+<select id="withdrawMethod">
+
+<option value="">Select Method</option>
+<option value="JazzCash">JazzCash</option>
+<option value="EasyPaisa">EasyPaisa</option>
+
+</select>
+
+</div>
+
+<div class="form-group">
+
+<label>Account Name *</label>
+
+<input
+id="withdrawAccountName"
+type="text"
+placeholder="Account holder name">
+
+</div>
+
+<div class="form-group">
+
+<label>Account Number *</label>
+
+<input
+id="withdrawAccountNumber"
+type="tel"
+placeholder="JazzCash / EasyPaisa number">
+
+</div>
+
+<button
+class="black-btn"
+style="width:100%"
+onclick="submitWalletWithdrawal()">
+
+REQUEST WITHDRAWAL
+
+</button>
+
+<div id="withdrawMessage" class="message"></div>
+
+</div>
+
+
+<!-- WALLET RULES -->
+
+<div class="card">
+
+<h3>Wallet Information</h3>
+
+<ul>
+
+<li>Wallet deposits require payment verification.</li>
+
+<li>Deposits are credited after admin approval.</li>
+
+<li>Wallet can be used for ZELVO purchases.</li>
+
+<li>Wallet refunds do not have the Rs.30 withdrawal fee.</li>
+
+<li>Wallet withdrawals have a Rs.30 fee.</li>
+
+<li>Withdrawals require admin approval.</li>
+
+</ul>
+
+</div>
+
+
+<!-- TRANSACTIONS -->
+
+<div class="card">
+
+<div style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px">
+
+<h3>Wallet Transactions</h3>
+
+<button
+class="green-btn"
+onclick="loadWalletTransactions()">
+
+REFRESH
+
+</button>
+
+</div>
+
+<div id="walletTransactions">
+
+<div class="empty">
+Loading transactions...
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
 <!-- ACCOUNT -->
 
 <section id="account" class="page">
