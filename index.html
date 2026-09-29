@@ -4,7 +4,17 @@
 <meta charset="UTF-8">
 
 <meta name="google-site-verification" content="TEHWZ27eBizWiWOASjYC-w3krpYZFaIRhbmq_4T1qXc">
+<link rel="icon" type="image/jpeg" href="https://raw.githubusercontent.com/zelvoshop/ZELVO/refs/heads/main/watermarked_img_5448598231880710014.jpg">
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "OnlineStore",
+  "name": "ZELVO",
+  "url": "https://zelvoshop.github.io/ZELVO/",
+  "logo": "https://raw.githubusercontent.com/zelvoshop/ZELVO/refs/heads/main/watermarked_img_5448598231880710014.jpg"
+}
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZELVO - Online Shopping</title>
 
@@ -215,7 +225,48 @@ button{
   width:100%;
   margin-top:13px;
 }
+.product-cart-control{
+  margin-top:13px;
+}
 
+.added-cart-text{
+  width:100%;
+  background:#16a05d;
+  color:white;
+  border:0;
+  border-radius:8px;
+  padding:11px;
+  text-align:center;
+  font-weight:bold;
+  margin-bottom:8px;
+}
+
+.product-qty{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+}
+
+.product-qty button{
+  width:38px!important;
+  height:38px;
+  margin:0!important;
+  padding:0;
+  border:0;
+  border-radius:7px;
+  background:#111;
+  color:white;
+  font-size:20px;
+  font-weight:bold;
+}
+
+.product-qty span{
+  min-width:35px;
+  text-align:center;
+  font-weight:bold;
+  font-size:17px;
+}
 .card{
   background:white;
   border-radius:15px;
@@ -1293,40 +1344,78 @@ function showPage(id){
 
 function renderProducts(){
 
-  const html=products.map(p=>`
+  const html=products.map(p=>{
 
-    <div class="product">
+    const quantity=cart[p.id] || 0;
 
-      <img src="${p.image}" alt="${p.name}">
+    return `
 
-      <div class="product-content">
+      <div class="product">
 
-        <h3>${p.name}</h3>
+        <img src="${p.image}" alt="${p.name}">
 
-        <div>
+        <div class="product-content">
 
-          <span class="old-price">
-            Rs ${p.oldPrice}
-          </span>
+          <h3>${p.name}</h3>
 
-          <span class="sale-price">
-            Rs ${p.price}
-          </span>
+          <div>
+
+            <span class="old-price">
+              Rs ${p.oldPrice}
+            </span>
+
+            <span class="sale-price">
+              Rs ${p.price}
+            </span>
+
+          </div>
+
+          <div class="product-cart-control">
+
+            ${
+              quantity > 0
+              ?
+              `
+                <div class="added-cart-text">
+                  ✓ ADDED TO CART
+                </div>
+
+                <div class="product-qty">
+
+                  <button onclick="changeProductQty('${p.id}',-1)">
+                    −
+                  </button>
+
+                  <span>
+                    ${quantity}
+                  </span>
+
+                  <button onclick="changeProductQty('${p.id}',1)">
+                    +
+                  </button>
+
+                </div>
+              `
+              :
+              `
+                <button class="green-btn"
+                        onclick="addToCart('${p.id}')">
+
+                  ADD TO CART
+
+                </button>
+              `
+            }
+
+          </div>
 
         </div>
 
-        <button class="green-btn"
-                onclick="addToCart('${p.id}')">
-
-          ADD TO CART
-
-        </button>
-
       </div>
 
-    </div>
+    `;
 
-  `).join("");
+  }).join("");
 
   document.getElementById("homeProducts").innerHTML=html;
 
@@ -1365,17 +1454,12 @@ function updateCartCount(){
 
 
 function addToCart(id){
-
   cart[id]=(cart[id] || 0)+1;
-
   saveCart();
-
+  renderProducts();
   renderCart();
-
   alert("Product added to cart.");
-
 }
-
 
 function changeQty(id,amount){
 
@@ -1384,7 +1468,20 @@ function changeQty(id,amount){
   if(cart[id]<=0){
     delete cart[id];
   }
+function changeProductQty(id,amount){
 
+  cart[id]=(cart[id] || 0)+amount;
+
+  if(cart[id]<=0){
+    delete cart[id];
+  }
+
+  saveCart();
+
+  renderProducts();
+
+  renderCart();
+}
   saveCart();
 
   renderCart();
@@ -2162,9 +2259,7 @@ function orderCard(order){
 
 
   const canCancel=
-    order.status!=="Delivered" &&
-    order.status!=="Cancelled";
-
+  order.status==="Pending";
 
   return `
 
